@@ -7,7 +7,7 @@ namespace Bench
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<ReadBench>();
+            BenchmarkRunner.Run<SerializeBench>();
             Console.ReadLine();
         }
     }
