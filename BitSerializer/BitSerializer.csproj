@@ -7,12 +7,14 @@
     <Company>Dennis Corvers</Company>
     <Copyright>Copyright (c) 2020 DennisCorvers</Copyright>
     <PackageLicenseUrl>MIT</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/DennisCorvers/BitStream</RepositoryUrl>
+    <RepositoryUrl>https://github.com/DennisCorvers/BitSerializer</RepositoryUrl>
     <PackageTags>serialization, fast, unmanaged, pointer, bitpack, game development, unity</PackageTags>
     <NeutralLanguage>English</NeutralLanguage>
-    <PackageId>BitStream</PackageId>
-    <Product>BitStream</Product>
-    <Description>BitStream offers serialization (reading and writing) of various data types. It uses either a build-in allocator (make sure to Dispose when using this!) or a supplied buffer. BitStream bitpacks data, meaning that data types such as a Boolean will take up 8 times less space! It also has several mechanisms of saving space when serializing floats and integer-types. It's an ideal serializer for when you want to minimize network traffic (such as in a game).</Description>
+    <PackageId>BitSerializer</PackageId>
+    <Product>BitSerializer</Product>
+    <Description>BitSerializer offers serialization (reading and writing) of various data types. It uses either a build-in allocator (make sure to Dispose when using this!) or a supplied buffer. BitStream bitpacks data, meaning that data types such as a Boolean will take up 8 times less space! It also has several mechanisms of saving space when serializing floats and integer-types. It's an ideal serializer for when you want to minimize network traffic (such as in a game).</Description>
+    <AssemblyName>BitSerializer</AssemblyName>
+    <RootNamespace>BitSerializer</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

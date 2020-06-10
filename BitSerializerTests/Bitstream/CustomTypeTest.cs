@@ -1,4 +1,4 @@
-﻿using BlittableSerializer;
+﻿using BitSerializer;
 using BlittableTests.Extension;
 using NUnit.Framework;
 using System;

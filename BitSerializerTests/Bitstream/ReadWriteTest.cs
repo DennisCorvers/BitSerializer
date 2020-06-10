@@ -1,4 +1,4 @@
-﻿using BlittableSerializer;
+﻿using BitSerializer;
 using NUnit.Framework;
 
 namespace BlittableTests.Bitstream

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BlittableSerializer.Delegates
+namespace BitSerializer.Delegates
 {
     public delegate IntPtr Alloc(int size);
 }

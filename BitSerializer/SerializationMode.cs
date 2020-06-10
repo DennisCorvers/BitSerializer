@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BlittableSerializer
+namespace BitSerializer
 {
     public enum SerializationMode : byte
     {

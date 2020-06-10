@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlittableSerializer\BlittableSerializer.csproj" />
+    <ProjectReference Include="..\BitSerializer\BitSerializer.csproj" />
   </ItemGroup>
 
 </Project>

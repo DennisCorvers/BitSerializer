@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlittableSerializer", "BlittableSerializer\BlittableSerializer.csproj", "{92498993-F27B-479C-9B93-F781B0855A7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitSerializer", "BitSerializer\BitSerializer.csproj", "{92498993-F27B-479C-9B93-F781B0855A7C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bench", "Bench\Bench.csproj", "{6CA0661D-CC14-4F7B-BEAE-1BD0E8D0A76D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlittableTests", "BlittableTests\BlittableTests.csproj", "{D4089C0F-6E31-44B1-861D-9F7D88DE4EDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitSerializerTests", "BitSerializerTests\BitSerializerTests.csproj", "{D4089C0F-6E31-44B1-861D-9F7D88DE4EDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

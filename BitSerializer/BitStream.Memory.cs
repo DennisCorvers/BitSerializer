@@ -1,8 +1,8 @@
-﻿using BlittableSerializer.Utils;
+﻿using BitSerializer.Utils;
 using System;
 using System.Diagnostics;
 
-namespace BlittableSerializer
+namespace BitSerializer
 {
     public unsafe partial class BitStream
     {

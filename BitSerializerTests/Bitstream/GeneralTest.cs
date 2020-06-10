@@ -1,5 +1,5 @@
-﻿using BlittableSerializer;
-using BlittableSerializer.Utils;
+﻿using BitSerializer;
+using BitSerializer.Utils;
 using NUnit.Framework;
 using System;
 using System.Runtime.InteropServices;

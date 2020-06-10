@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace BlittableSerializer.Types
+namespace BitSerializer.Types
 {
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size = 1)]

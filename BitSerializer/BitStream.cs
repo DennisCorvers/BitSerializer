@@ -19,14 +19,12 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-using BlittableSerializer.Utils;
+using BitSerializer.Utils;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace BlittableSerializer
+namespace BitSerializer
 {
     public unsafe partial class BitStream : IDisposable
     {

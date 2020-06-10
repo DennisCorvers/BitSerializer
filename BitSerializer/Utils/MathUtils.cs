@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace BlittableSerializer.Utils
+namespace BitSerializer.Utils
 {
     public static class MathUtils
     {

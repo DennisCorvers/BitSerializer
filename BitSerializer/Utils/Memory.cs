@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace BlittableSerializer.Utils
+namespace BitSerializer.Utils
 {
     public unsafe static class Memory
     {

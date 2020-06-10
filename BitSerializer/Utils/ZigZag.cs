@@ -22,7 +22,7 @@
  */
 using System.Runtime.CompilerServices;
 
-namespace BlittableSerializer.Utils
+namespace BitSerializer.Utils
 {
     public static class ZigZag
     {
