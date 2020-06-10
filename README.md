@@ -1,6 +1,8 @@
 # BitStream
 A bitstream that offers (de)serialization in binary format
 
+BitStream is written in NetStandard2.0 making it compatible with Unity3D!
+
 A serializer/stream for reading/writing various types of data. Similar to https://github.com/DennisCorvers/ByteStream but instead packs on bits instead of bytes. This means that with BitStream, the smallest possible read and write is 1 bit long. This allows for compressing data (like bit flags) down by up to 8-fold!
 
 *__Carefully read the Usage section__ for a brief introduction on how to use the library.*
