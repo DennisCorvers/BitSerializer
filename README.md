@@ -26,9 +26,38 @@ Bitstream consists of one class that offers a series of write and read operation
 
 
 # Technical specifications:
-Benchmarks yet to come...
+
+The benchmark tests the writing of 1 boolean value followed by 1 integer value (semi-random) for 1024 times. After writing, the same process is repeated for reading.
+
+A boolean value is written and read to ensure a worst-case scenario for the BitStream (due to misaligned offsets).
 
 
+|       Method |     Mean |     Error |    StdDev | Ratio |
+|------------- |---------:|----------:|----------:|------:|
+|    ByteWrite | 3.108 us | 0.0139 us | 0.0130 us |  0.87 |
+|     PtrWrite | 3.060 us | 0.0111 us | 0.0104 us |  0.85 |
+|      BitRead | 4.778 us | 0.0128 us | 0.0100 us |  1.33 |
+| ArraySegment | 3.587 us | 0.0131 us | 0.0122 us |  1.00 |
+|   BitConvert | 6.756 us | 0.0482 us | 0.0450 us |  1.88 |
+
+**Why would you use BitStream?**
+
+BitStream can severely reduce the amount of data used when serializing data.
+
+Imagine serializing the following object, where the mana can range from 0 to 100, and the hp from 0 to 999. Normal serialization would result in a size of 27 bytes. 
+
+When using BitStream, we can choose to limit the precision of the Vectors. This results in a byte size of 15! That's a difference of almost 45%
+
+```C#
+public class Player
+{
+    System.Numerics.Vector3 position;
+    System.Numerics.Vector3 rotation;
+
+    byte mana = 100;
+    ushort hp = 100;
+}
+```
 # Usage
 
 Because the API is almost identical, the managed and unmanaged readers and writers function nearly identical. Be warned that when using the unmanaged reader or writer, the provided length must be no longer than the actual length of the memory block provided.
