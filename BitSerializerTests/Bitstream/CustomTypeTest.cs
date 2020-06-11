@@ -1,5 +1,6 @@
 ﻿using BitSerializer;
 using BitSerializer.Extension;
+using BitSerializerTests.Extension;
 using NUnit.Framework;
 using System;
 using System.Numerics;
@@ -74,6 +75,23 @@ namespace BitSerializer.Bitstream
             m_stream.Zeroes(1);
             Vector3 result = m_stream.ReadBlit<Vector3>();
             Assert.AreEqual(m_testStruct, result);
+        }
+
+        [Test]
+        public void VectorExtensionTest()
+        {
+            const int bitsize = sizeof(float) * 3 / 2 * 8; //Using 3 Half Precision floats (to bit size)
+            Vector3 value = new Vector3(1, 2, 3);
+
+            m_stream.Serialize(ref value);
+            Assert.AreEqual(bitsize, m_stream.BitOffset);
+
+            Vector3 replica = new Vector3();
+
+            m_stream.ResetRead();
+            m_stream.Serialize(ref replica);
+            Assert.AreEqual(bitsize, m_stream.BitOffset);
+            Assert.AreEqual(value, replica);
         }
     }
 }

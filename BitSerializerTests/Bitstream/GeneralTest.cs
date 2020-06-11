@@ -1,5 +1,4 @@
-﻿using BitSerializer;
-using BitSerializer.Utils;
+﻿using BitSerializer.Utils;
 using NUnit.Framework;
 using System;
 using System.Runtime.InteropServices;
@@ -19,28 +18,6 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(false, bs.IsReading);
             Assert.AreEqual(SerializationMode.None, bs.Mode);
             Assert.AreEqual(IntPtr.Zero, bs.Buffer);
-        }
-
-        //[Test]
-        public void Test()
-        {
-            BitStream bs = new BitStream();
-            bs.ResetWrite(64);
-
-            bs.WriteFloat(0, 0, 0, 0);
-
-
-            bs.Dispose();
-        }
-
-
-        public class Player
-        {
-            System.Numerics.Vector3 position;
-            System.Numerics.Vector3 rotation;
-
-            byte mana = 100;
-            ushort hp = 100;
         }
 
         [Test]
