@@ -1,7 +1,7 @@
 ﻿using BitSerializer;
 using NUnit.Framework;
 
-namespace BlittableTests.Bitstream
+namespace BitSerializer.Bitstream
 {
     [TestFixture]
     internal class MinMaxTest

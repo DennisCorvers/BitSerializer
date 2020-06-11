@@ -1,10 +1,10 @@
 ﻿using BitSerializer;
-using BlittableTests.Extension;
+using BitSerializer.Extension;
 using NUnit.Framework;
 using System;
 using System.Numerics;
 
-namespace BlittableTests.Bitstream
+namespace BitSerializer.Bitstream
 {
     [TestFixture]
     internal unsafe class BlittableTypeTest

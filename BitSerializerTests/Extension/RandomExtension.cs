@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BlittableTests.Extension
+namespace BitSerializer.Extension
 {
     public static class RandomExtension
     {

@@ -4,7 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Runtime.InteropServices;
 
-namespace BlittableTests.Bitstream
+namespace BitSerializer.Bitstream
 {
     [TestFixture]
     internal class GeneralTest

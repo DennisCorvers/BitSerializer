@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System.Text;
 
-namespace BlittableTests.Bitstream
+namespace BitSerializer.Bitstream
 {
     [TestFixture]
     internal class StringsTest
