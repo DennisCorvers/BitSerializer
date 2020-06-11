@@ -274,10 +274,18 @@ namespace BitSerializer
             else value = ReadDouble();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref float value)
+        public void Serialize(ref float value, bool halfPrecision = false)
         {
-            if (m_mode == SerializationMode.Writing) WriteSingle(value);
-            else value = ReadSingle();
+            if (!halfPrecision)
+            {
+                if (m_mode == SerializationMode.Writing) WriteFloat(value);
+                else value = ReadFloat();
+            }
+            else
+            {
+                if (m_mode == SerializationMode.Writing) WriteHalf(value);
+                else value = ReadHalf();
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Serialize(ref decimal value)
@@ -427,10 +435,11 @@ namespace BitSerializer
             return *(double*)&val;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadSingle()
+        public float ReadFloat()
         {
-            ulong val = Read(32);
+            uint val = unchecked((uint)Read(32));
             return *(float*)&val;
+
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public decimal ReadDecimal()
@@ -511,7 +520,7 @@ namespace BitSerializer
             return *(double*)&val;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float PeekSingle()
+        public float PeekFloat()
         {
             ulong val = Peek(32);
             return *(float*)&val;
@@ -610,7 +619,7 @@ namespace BitSerializer
             Write(*(ulong*)&value, sizeof(double) * 8);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSingle(float value)
+        public void WriteFloat(float value)
         {
             Write(*(uint*)&value, sizeof(float) * 8);
         }

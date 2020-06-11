@@ -50,14 +50,14 @@ namespace BlittableTests.Bitstream
 
             m_stream.WriteBool(bVal);
             m_stream.WriteDouble(dVal);
-            m_stream.WriteSingle(fVal);
+            m_stream.WriteFloat(fVal);
             m_stream.WriteShort(sVal);
             Assert.AreEqual(offset, m_stream.BitOffset);
 
             m_stream.ResetRead();
             Assert.AreEqual(bVal, m_stream.ReadBool());
             Assert.AreEqual(dVal, m_stream.ReadDouble());
-            Assert.AreEqual(fVal, m_stream.ReadSingle());
+            Assert.AreEqual(fVal, m_stream.ReadFloat());
             Assert.AreEqual(sVal, m_stream.ReadShort());
             Assert.AreEqual(offset, m_stream.BitOffset);
         }

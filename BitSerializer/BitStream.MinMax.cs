@@ -7,10 +7,16 @@ namespace BitSerializer
     public unsafe partial class BitStream
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Serialize(ref float value, float min, float max, int bits)
+        {
+            if (m_mode == SerializationMode.Writing) WriteFloat(value, min, max, bits);
+            else value = ReadFloat(min, max, bits);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Serialize(ref float value, float min, float max, float precision)
         {
-            if (m_mode == SerializationMode.Writing) WriteSingle(value, min, max, precision);
-            else value = ReadSingle(min, max, precision);
+            if (m_mode == SerializationMode.Writing) WriteFloat(value, min, max, precision);
+            else value = ReadFloat(min, max, precision);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -63,9 +69,26 @@ namespace BitSerializer
             else value = ReadULong(min, max);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float ReadHalf()
+        {
+            return HalfPrecision.Decompress((ushort)Read(16));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadSingle(float min, float max, float precision)
+        public float ReadFloat(float min, float max, int bits)
+        {
+            Debug.Assert(bits > 0, "Minimum bit size is 1");
+            Debug.Assert(bits < 32, "Maximum bit size is 31.");
+
+            var maxvalue = (1 << bits) - 1;
+            float range = max - min;
+            var precision = range / maxvalue;
+
+            return Read(bits) * precision + min;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float ReadFloat(float min, float max, float precision)
         {
             float inv = 1.0f / precision;
             float maxVal = (max - min) * inv;
@@ -121,8 +144,29 @@ namespace BitSerializer
             return Read(MathUtils.BitsRequired(min, max)) + min;
         }
 
+        /// <summary>
+        /// Peeks a half-precision floating point.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float PeekSingle(float min, float max, float precision)
+        public float PeekHalf()
+        {
+            return HalfPrecision.Decompress((ushort)Peek(16));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float PeekFloat(float min, float max, int bits)
+        {
+            Debug.Assert(bits > 0, "Minimum bit size is 1");
+            Debug.Assert(bits < 33, "Maximum bit size is 32");
+
+            var maxvalue = (1 << bits) - 1;
+            float range = max - min;
+            var precision = range / maxvalue;
+
+            return Peek(bits) * precision + min;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float PeekFloat(float min, float max, float precision)
         {
             float inv = 1.0f / precision;
             float maxVal = (max - min) * inv;
@@ -178,13 +222,38 @@ namespace BitSerializer
             return Peek(MathUtils.BitsRequired(min, max)) + min;
         }
 
+        /// <summary>
+        /// Writes a half-precision floating point.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSingle(float value, float min, float max, float precision)
+        public void WriteHalf(float value)
+        {
+            Write(HalfPrecision.Compress(value), 16);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteFloat(float value, float min, float max, float precision)
         {
             float inv = 1.0f / precision;
             float maxVal = (max - min) * inv;
             int bits = MathUtils.Log2_32((uint)(maxVal + 0.5f)) + 1;
             float adjusted = (value - min) * inv;
+
+            Write((uint)(adjusted + 0.5f), bits);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteFloat(float value, float min, float max, int bits)
+        {
+            Debug.Assert(bits > 0, "Minimum bit size is 1");
+            Debug.Assert(bits < 33, "Maximum bit size is 32");
+
+            var maxvalue = (1 << bits) - 1;
+
+            float range = max - min;
+            var precision = range / maxvalue;
+            var invPrecision = 1.0f / precision;
+
+            float adjusted = (value - min) * invPrecision;
 
             Write((uint)(adjusted + 0.5f), bits);
         }

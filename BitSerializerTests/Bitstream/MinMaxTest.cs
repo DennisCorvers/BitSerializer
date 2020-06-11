@@ -42,9 +42,9 @@ namespace BlittableTests.Bitstream
         {
             float min = -5, max = 5, prec = 0.2f;
 
-            m_stream.WriteSingle(value, min, max, prec);
+            m_stream.WriteFloat(value, min, max, prec);
             m_stream.ResetRead();
-            Assert.AreEqual(value, m_stream.ReadSingle(min, max, prec), 0.000005f);
+            Assert.AreEqual(value, m_stream.ReadFloat(min, max, prec), 0.000005f);
         }
 
         [TestCase]
@@ -89,18 +89,7 @@ namespace BlittableTests.Bitstream
             Assert.AreEqual(value, rep);
         }
 
-        [TestCase(1.4f)]
-        public void SerializeFloatTest(float value)
-        {
-            float min = -5, max = 5, prec = .4f, rep = 0;
 
-            m_stream.Serialize(ref value, min, max, prec);
-            Assert.AreEqual(true, m_stream.BitOffset > 0);
-            m_stream.ResetRead();
-            m_stream.Serialize(ref rep, min, max, prec);
-
-            Assert.AreEqual(value, rep, 0.00001f);
-        }
 
         [TestCase]
         public void SerializeMultiple()

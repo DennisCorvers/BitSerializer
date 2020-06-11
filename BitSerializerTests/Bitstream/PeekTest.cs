@@ -43,9 +43,9 @@ namespace BlittableTests.Bitstream
         {
             float min = -5, max = 5, prec = 0.2f;
 
-            m_stream.WriteSingle(value, min, max, prec);
+            m_stream.WriteFloat(value, min, max, prec);
             m_stream.ResetRead();
-            Assert.AreEqual(value, m_stream.PeekSingle(min, max, prec), 0.000005f);
+            Assert.AreEqual(value, m_stream.PeekFloat(min, max, prec), 0.000005f);
             Assert.AreEqual(0, m_stream.BitOffset);
         }
     }

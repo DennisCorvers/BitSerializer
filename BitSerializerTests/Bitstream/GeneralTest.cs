@@ -21,6 +21,28 @@ namespace BlittableTests.Bitstream
             Assert.AreEqual(IntPtr.Zero, bs.Buffer);
         }
 
+        //[Test]
+        public void Test()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(64);
+
+            bs.WriteFloat(0, 0, 0, 0);
+
+
+            bs.Dispose();
+        }
+
+
+        public class Player
+        {
+            System.Numerics.Vector3 position;
+            System.Numerics.Vector3 rotation;
+
+            byte mana = 100;
+            ushort hp = 100;
+        }
+
         [Test]
         public void ResetReadTest1()
         {
@@ -111,19 +133,6 @@ namespace BlittableTests.Bitstream
             Assert.AreEqual(0, bs.BitLength);
             Assert.AreEqual(0, bs.BitOffset);
             Assert.AreEqual(SerializationMode.None, bs.Mode);
-        }
-
-        [Test]
-        public void ExceedBufferTest()
-        {
-            BitStream bs = new BitStream();
-            bs.ResetWrite(3);
-            bs.WriteLong(123);
-
-            Assert.Catch<InvalidOperationException>(() =>
-            {
-                bs.WriteLong(321);
-            });
         }
 
         [Test]
