@@ -54,7 +54,7 @@ namespace BitSerializer.Bitstream
         [TestCase((float)Math.PI)]
         public void FloatBitsTest(float value)
         {
-            int bits = 16;
+            const int bits = 16;
             m_stream.WriteFloat(value, 0, 5, bits);
             Assert.AreEqual(bits, m_stream.BitOffset);
 
@@ -95,7 +95,7 @@ namespace BitSerializer.Bitstream
         [TestCase((float)Math.PI)]
         public void SerializeFloatBitsTest(float value)
         {
-            int bits = 16;
+            const int bits = 16;
             m_stream.Serialize(ref value, 3, 15, bits);
             Assert.AreEqual(bits, m_stream.BitOffset);
 

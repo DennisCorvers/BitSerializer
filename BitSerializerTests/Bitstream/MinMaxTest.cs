@@ -21,7 +21,7 @@ namespace BitSerializer.Bitstream
         [TestCase(-1532)]
         public void ReadWriteIntTest(int value)
         {
-            int min = -2000, max = 0;
+            const int min = -2000, max = 0;
 
             m_stream.WriteInt32(value, min, max);
             m_stream.ResetRead();
@@ -31,7 +31,8 @@ namespace BitSerializer.Bitstream
         [TestCase(351)]
         public void ReadWriteUIntTest(int value)
         {
-            uint min = 0, max = 500;
+            const uint min = 0, max = 500;
+
             m_stream.WriteUInt32((uint)value, min, max);
             m_stream.ResetRead();
             Assert.AreEqual(value, m_stream.ReadUInt32(min, max));
@@ -40,7 +41,7 @@ namespace BitSerializer.Bitstream
         [TestCase(1.4f)]
         public void ReadWriteFloatTest(float value)
         {
-            float min = -5, max = 5, prec = 0.2f;
+            const float min = -5, max = 5, prec = 0.2f;
 
             m_stream.WriteFloat(value, min, max, prec);
             m_stream.ResetRead();
@@ -66,7 +67,8 @@ namespace BitSerializer.Bitstream
         [TestCase(-1532)]
         public void SerializeIntTest(int value)
         {
-            int min = -2000, max = 0, rep = 0;
+            const int min = -2000, max = 0;
+            int rep = 0;
 
             m_stream.Serialize(ref value, min, max);
             Assert.AreEqual(true, m_stream.BitOffset > 0);
@@ -79,7 +81,8 @@ namespace BitSerializer.Bitstream
         [TestCase(351)]
         public void SerializeUIntTest(int value)
         {
-            uint min = 0, max = 500, val = (uint)value, rep = 0;
+            const uint min = 0, max = 500;
+            uint val = (uint)value, rep = 0;
 
             m_stream.Serialize(ref val, min, max);
             Assert.AreEqual(true, m_stream.BitOffset > 0);
@@ -88,8 +91,6 @@ namespace BitSerializer.Bitstream
 
             Assert.AreEqual(value, rep);
         }
-
-
 
         [TestCase]
         public void SerializeMultiple()
@@ -110,6 +111,40 @@ namespace BitSerializer.Bitstream
             m_stream.Serialize(ref rep.srtVal, -50, 0);
 
             Assert.AreEqual(hlp, rep);
+        }
+
+        [TestCase]
+        public void SerializeBuilderTest()
+        {
+            long lvalue = -68171523;
+            sbyte sbvalue = -100;
+            ulong ulvalue = 829058234234;
+            ushort usvalue = 54105;
+
+            m_stream
+                .Serialize(ref lvalue, -100000000, 0)
+                .Serialize(ref sbvalue, -125, -50)
+                .Serialize(ref ulvalue, 1000000000, ulong.MaxValue)
+                .Serialize(ref usvalue, 10000, 60000)
+                .ResetRead();
+
+            Assert.AreEqual(SerializationMode.Reading, m_stream.Mode);
+
+            long repLvalue = 0;
+            sbyte repSbvalue = 0;
+            ulong repUlvalue = 0;
+            ushort repUsvalue = 0;
+
+            m_stream
+                .Serialize(ref repLvalue, -100000000, 0)
+                .Serialize(ref repSbvalue, -125, -50)
+                .Serialize(ref repUlvalue, 1000000000, ulong.MaxValue)
+                .Serialize(ref repUsvalue, 10000, 60000);
+
+            Assert.AreEqual(lvalue, repLvalue);
+            Assert.AreEqual(sbvalue, repSbvalue);
+            Assert.AreEqual(ulvalue, repUlvalue);
+            Assert.AreEqual(usvalue, repUsvalue);
         }
 
         private struct HelperStruct

@@ -6,9 +6,12 @@ namespace BitSerializer
 {
     public unsafe partial class BitStream
     {
-        public void WriteMemory(IntPtr ptr, int byteSize)
-        { WriteMemory((void*)ptr, byteSize); }
-        public void WriteMemory(void* ptr, int byteSize)
+        public BitStream WriteMemory(IntPtr ptr, int byteSize)
+        {
+            WriteMemory((void*)ptr, byteSize);
+            return this;
+        }
+        public BitStream WriteMemory(void* ptr, int byteSize)
         {
             int numLongs = byteSize / 8;
             ulong* p = (ulong*)ptr;
@@ -21,6 +24,7 @@ namespace BitSerializer
                 WriteByte(*bptr);
                 bptr++;
             }
+            return this;
         }
 
         public void ReadMemory(IntPtr ptr, int byteSize)
@@ -39,7 +43,7 @@ namespace BitSerializer
             }
         }
 
-        public void WriteBytes(byte[] bytes, int offset, int count, bool includeSize = false)
+        public BitStream WriteBytes(byte[] bytes, int offset, int count, bool includeSize = false)
         {
             Debug.Assert(bytes.Length >= offset + count, "Offset and count exceed array size");
             Debug.Assert(offset >= 0, "Offset must be at least 0");
@@ -50,6 +54,8 @@ namespace BitSerializer
 
             fixed (byte* ptr = &bytes[offset])
             { WriteMemory(ptr, count); }
+
+            return this;
         }
         public void ReadBytes(byte[] bytes, int offset, int count)
         {

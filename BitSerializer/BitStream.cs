@@ -268,13 +268,14 @@ namespace BitSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref double value)
+        public BitStream Serialize(ref double value)
         {
             if (m_mode == SerializationMode.Writing) WriteDouble(value);
             else value = ReadDouble();
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref float value, bool halfPrecision = false)
+        public BitStream Serialize(ref float value, bool halfPrecision = false)
         {
             if (!halfPrecision)
             {
@@ -286,72 +287,84 @@ namespace BitSerializer
                 if (m_mode == SerializationMode.Writing) WriteHalf(value);
                 else value = ReadHalf();
             }
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref decimal value)
+        public BitStream Serialize(ref decimal value)
         {
             if (m_mode == SerializationMode.Writing) WriteDecimal(value);
             else value = ReadDecimal();
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref bool value)
+        public BitStream Serialize(ref bool value)
         {
             if (m_mode == SerializationMode.Writing) WriteBool(value);
             else value = ReadBool();
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref sbyte value, int bitCount = 8)
+        public BitStream Serialize(ref sbyte value, int bitCount = 8)
         {
             if (m_mode == SerializationMode.Writing) WriteSByte(value, bitCount);
             else value = ReadSByte(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref byte value, int bitCount = 8)
+        public BitStream Serialize(ref byte value, int bitCount = 8)
         {
             if (m_mode == SerializationMode.Writing) WriteByte(value, bitCount);
             else value = ReadByte(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref short value, int bitCount = 16)
+        public BitStream Serialize(ref short value, int bitCount = 16)
         {
             if (m_mode == SerializationMode.Writing) WriteShort(value, bitCount);
             else value = ReadShort(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref ushort value, int bitCount = 16)
+        public BitStream Serialize(ref ushort value, int bitCount = 16)
         {
             if (m_mode == SerializationMode.Writing) WriteUShort(value, bitCount);
             else value = ReadUShort(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref int value, int bitCount = 32)
+        public BitStream Serialize(ref int value, int bitCount = 32)
         {
             if (m_mode == SerializationMode.Writing) WriteInt32(value, bitCount);
             else value = ReadInt32(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref uint value, int bitCount = 32)
+        public BitStream Serialize(ref uint value, int bitCount = 32)
         {
             if (m_mode == SerializationMode.Writing) WriteUInt32(value, bitCount);
             else value = ReadUInt32(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref long value, int bitCount = 64)
+        public BitStream Serialize(ref long value, int bitCount = 64)
         {
             if (m_mode == SerializationMode.Writing) WriteLong(value, bitCount);
             else value = ReadLong(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref ulong value, int bitCount = 64)
+        public BitStream Serialize(ref ulong value, int bitCount = 64)
         {
             if (m_mode == SerializationMode.Writing) WriteULong(value, bitCount);
             else value = ReadULong(bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Serialize(ref char value, int bitCount = 16)
+        public BitStream Serialize(ref char value, int bitCount = 16)
         {
             if (m_mode == SerializationMode.Writing) WriteChar(value, bitCount);
             else value = ReadChar(bitCount);
+            return this;
         }
 
         public void Dispose()
@@ -363,7 +376,7 @@ namespace BitSerializer
         /// Skips a certain number of bits by writing 0's
         /// </summary>
         /// <param name="bitCount">Amount of bits to skip</param>
-        public void Zeroes(int bitCount)
+        public BitStream Zeroes(int bitCount)
         {
             Debug.Assert(bitCount > 0, "Amount of bits must be larger than zero.");
 
@@ -383,6 +396,7 @@ namespace BitSerializer
             {
                 m_offset += bitCount;
             }
+            return this;
         }
 
         /// <summary>
@@ -614,73 +628,86 @@ namespace BitSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteDouble(double value)
+        public BitStream WriteDouble(double value)
         {
             Write(*(ulong*)&value, sizeof(double) * 8);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteFloat(float value)
+        public BitStream WriteFloat(float value)
         {
             Write(*(uint*)&value, sizeof(float) * 8);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteDecimal(decimal value)
+        public BitStream WriteDecimal(decimal value)
         {
             Write(((ulong*)&value)[0], sizeof(ulong) * 8);
             Write(((ulong*)&value)[1], sizeof(ulong) * 8);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBool(bool value)
+        public BitStream WriteBool(bool value)
         {
             Write(value ? (ulong)1 : 0, 1);
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSByte(sbyte value, int bitCount = 8)
+        public BitStream WriteSByte(sbyte value, int bitCount = 8)
         {
             WriteULong(ZigZag.Zig(value), bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteShort(short value, int bitCount = 16)
+        public BitStream WriteShort(short value, int bitCount = 16)
         {
             WriteULong(ZigZag.Zig(value), bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt32(int value, int bitCount = 32)
+        public BitStream WriteInt32(int value, int bitCount = 32)
         {
             WriteULong(ZigZag.Zig(value), bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLong(long value, int bitCount = 64)
+        public BitStream WriteLong(long value, int bitCount = 64)
         {
             WriteULong(ZigZag.Zig(value), bitCount);
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByte(byte value, int bitCount = 8)
+        public BitStream WriteByte(byte value, int bitCount = 8)
         {
             Write(value, bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUShort(ushort value, int bitCount = 16)
+        public BitStream WriteUShort(ushort value, int bitCount = 16)
         {
             Write(value, bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt32(uint value, int bitCount = 32)
+        public BitStream WriteUInt32(uint value, int bitCount = 32)
         {
             Write(value, bitCount);
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteULong(ulong value, int bitCount = 64)
+        public BitStream WriteULong(ulong value, int bitCount = 64)
         {
             Write(value, bitCount);
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteChar(char value, int bitCount = 16)
+        public BitStream WriteChar(char value, int bitCount = 16)
         {
             Write(value, bitCount);
+            return this;
         }
 
         #endregion

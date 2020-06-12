@@ -5,23 +5,26 @@ namespace BitSerializer
     public unsafe partial class BitStream
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBlit<T>(T value)
+        public BitStream WriteBlit<T>(T value)
             where T : unmanaged
         {
             WriteMemory(&value, sizeof(T));
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBlit<T>(T* value)
+        public BitStream WriteBlit<T>(T* value)
             where T : unmanaged
         {
             WriteMemory(value, sizeof(T));
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReadBlit<T>(T* value)
+        public BitStream ReadBlit<T>(T* value)
             where T : unmanaged
         {
             ReadMemory(value, sizeof(T));
+            return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T ReadBlit<T>()
@@ -40,11 +43,12 @@ namespace BitSerializer
             else value = ReadBlit<T>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SerializeBlit<T>(T* value)
+        public BitStream SerializeBlit<T>(T* value)
             where T : unmanaged
         {
             if (m_mode == SerializationMode.Writing) WriteBlit(value);
             else ReadBlit(value);
+            return this;
         }
     }
 }

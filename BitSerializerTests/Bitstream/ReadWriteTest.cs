@@ -42,11 +42,11 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ReadWriteMultipleTest()
         {
-            bool bVal = true;
-            double dVal = double.MaxValue / 3 * 2;
-            float fVal = float.MinValue / 5;
-            short sVal = -12345;
-            int offset = 113;
+            const bool bVal = true;
+            const double dVal = double.MaxValue / 3 * 2;
+            const float fVal = float.MinValue / 5;
+            const short sVal = -12345;
+            const int offset = 113;
 
             m_stream.WriteBool(bVal);
             m_stream.WriteDouble(dVal);
@@ -64,7 +64,9 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ReadWriteSizeTest()
         {
-            byte bVal = 100; int iVal = -100; const byte bitSize = 7;
+            const byte bVal = 100;
+            const int iVal = -100;
+            const byte bitSize = 7;
 
             m_stream.WriteByte(bVal, bitSize);
             m_stream.WriteInt32(iVal, bitSize + 1);
@@ -120,6 +122,29 @@ namespace BitSerializer.Bitstream
             m_stream.Zeroes(5);
             Assert.AreEqual(value, m_stream.ReadInt32());
             Assert.AreEqual(37, m_stream.BitOffset);
+        }
+
+        [TestCase]
+        public void BuilderTest()
+        {
+            const uint uintVal = 598135039;
+            const long longVal = 1234567890;
+            const char charVal = '@';
+            const decimal decVal = (decimal)(System.Math.PI * System.Math.E);
+
+            m_stream
+                .WriteUInt32(uintVal)
+                .WriteLong(longVal)
+                .WriteChar(charVal)
+                .WriteDecimal(decVal)
+                .ResetRead();
+
+            Assert.AreEqual(SerializationMode.Reading, m_stream.Mode);
+
+            Assert.AreEqual(uintVal, m_stream.ReadUInt32());
+            Assert.AreEqual(longVal, m_stream.ReadLong());
+            Assert.AreEqual(charVal, m_stream.ReadChar());
+            Assert.AreEqual(decVal, m_stream.ReadDecimal());
         }
     }
 }

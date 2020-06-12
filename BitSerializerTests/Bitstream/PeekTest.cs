@@ -20,7 +20,7 @@ namespace BitSerializer.Bitstream
         [TestCase(-1532)]
         public void PeekIntTest(int value)
         {
-            int min = -2000, max = 0;
+            const int min = -2000, max = 0;
 
             m_stream.WriteInt32(value, min, max);
             m_stream.ResetRead();
@@ -31,7 +31,8 @@ namespace BitSerializer.Bitstream
         [TestCase(351)]
         public void PeekLong(int value)
         {
-            uint min = 0, max = 500;
+            const uint min = 0, max = 500;
+
             m_stream.WriteUInt32((uint)value, min, max);
             m_stream.ResetRead();
             Assert.AreEqual(value, m_stream.PeekUInt32(min, max));
@@ -41,7 +42,7 @@ namespace BitSerializer.Bitstream
         [TestCase(1.4f)]
         public void PeekFloat(float value)
         {
-            float min = -5, max = 5, prec = 0.2f;
+            const float min = -5, max = 5, prec = 0.2f;
 
             m_stream.WriteFloat(value, min, max, prec);
             m_stream.ResetRead();

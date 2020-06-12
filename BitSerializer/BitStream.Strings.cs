@@ -8,21 +8,25 @@ namespace BitSerializer
     {
         public const byte StringLengthMax = byte.MaxValue;
 
-        public void WriteString(string str, Encoding encoding)
+        public BitStream WriteString(string str, Encoding encoding)
         {
             if (str == null) { throw new ArgumentNullException("str"); }
 
             fixed (char* ptr = str)
             { WriteString(ptr, str.Length, encoding); }
+
+            return this;
         }
-        public void WriteString(char[] str, Encoding encoding)
+        public BitStream WriteString(char[] str, Encoding encoding)
         {
             if (str == null) { throw new ArgumentNullException("str"); }
 
             fixed (char* ptr = str)
             { WriteString(ptr, str.Length, encoding); }
+
+            return this;
         }
-        public void WriteString(char* ptr, int charCount, Encoding encoding)
+        public BitStream WriteString(char* ptr, int charCount, Encoding encoding)
         {
             if (charCount > StringLengthMax)
             { throw new ArgumentOutOfRangeException("String length exceeds maximum allowed size of " + StringLengthMax); }
@@ -33,6 +37,8 @@ namespace BitSerializer
             byte* bytes = stackalloc byte[byteLength];
             encoding.GetBytes(ptr, charCount, bytes, byteLength);
             WriteMemory(bytes, byteLength);
+
+            return this;
         }
 
         public string ReadString(Encoding encoding)
