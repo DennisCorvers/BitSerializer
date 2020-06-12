@@ -97,4 +97,9 @@ size = stream.ReadBlit<Vector2>();
 //IMPORTANT Don't forget to dispose after use!
 stream.Dispose();
 
+//Chaining of write operations
+stream.WriteInt32(playerID)
+      .WriteBool(player.IsAlive)
+      .WriteUShort(playerHP, 0, 10000);
+
 ```
