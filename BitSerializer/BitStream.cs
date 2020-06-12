@@ -37,7 +37,6 @@ namespace BitSerializer
         private int m_offset;
         private SerializationMode m_mode;
         private bool m_ownsBuffer;
-
 #pragma warning restore
 
         public BitStream() { }
@@ -51,7 +50,7 @@ namespace BitSerializer
         /// The current stream offset in bits.
         /// </summary>
         public int BitOffset
-        { get { return m_offset; } }
+            => m_offset;
         /// <summary>
         /// The current stream offset in bytes.
         /// </summary>
@@ -106,7 +105,7 @@ namespace BitSerializer
             Debug.Assert(bitCount <= 64, "Amount of bits may not be larger than 64.");
 
             if (m_offset + bitCount > m_bitLength)
-            { throw new InvalidOperationException("Inner buffer is exceeded"); }
+                throw new InvalidOperationException("Inner buffer is exceeded");
         }
 
         /// <summary>
@@ -133,7 +132,8 @@ namespace BitSerializer
         public void ResetRead(byte[] data, int offset, int length)
         {
             Debug.Assert(offset >= 0, "Offset must be greater than zero.");
-            if (length + offset > data.Length) { throw new ArgumentOutOfRangeException("length"); }
+            if (length + offset > data.Length)
+                throw new ArgumentOutOfRangeException("length");
 
             fixed (byte* ptr = &data[offset])
             { ResetRead((IntPtr)ptr, length); }

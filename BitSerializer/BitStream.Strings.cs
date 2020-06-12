@@ -29,7 +29,7 @@ namespace BitSerializer
         public BitStream WriteString(char* ptr, int charCount, Encoding encoding)
         {
             if (charCount > StringLengthMax)
-            { throw new ArgumentOutOfRangeException("String length exceeds maximum allowed size of " + StringLengthMax); }
+                throw new ArgumentOutOfRangeException("String length exceeds maximum allowed size of " + StringLengthMax);
 
             int byteLength = encoding.GetByteCount(ptr, charCount);
             WriteUShort((ushort)byteLength);
@@ -46,7 +46,7 @@ namespace BitSerializer
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
 
             if (byteCount == 0)
-            { return string.Empty; }
+                return string.Empty;
 
             byte* buffer = stackalloc byte[byteCount];
             ReadMemory(buffer, byteCount);
@@ -69,8 +69,10 @@ namespace BitSerializer
 
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
 
-            if (byteCount == 0) { return 0; }
-            if (byteCount > 1024) { return byteCount; }
+            if (byteCount == 0)
+                return 0;
+            if (byteCount > 1024)
+                return byteCount;
 
             byte* buffer = stackalloc byte[byteCount];
             int charCount = Math.Min(encoding.GetCharCount(buffer, byteCount), charLength);

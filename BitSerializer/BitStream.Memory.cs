@@ -50,7 +50,7 @@ namespace BitSerializer
             Debug.Assert(count > 0, "Count must be at least 1");
 
             if (includeSize)
-            { WriteUShort((ushort)count); }
+                WriteUShort((ushort)count);
 
             fixed (byte* ptr = &bytes[offset])
             { WriteMemory(ptr, count); }
