@@ -14,7 +14,6 @@ Bitstream consists of one class that offers a series of write and read operation
 - Allows for minimum and maximum numeric values for further reducing data size.
 - Allows for various string formats to be written and read.
 - Allows for float precision to even further reduce data size.
-- Bitstream is a value type which means it can be created at will without generating garbage.
 - Automatically keeps track of offsets and buffer boundaries.
 - Prefixes strings and memory blocks with a 2-byte length.
 - Works with all blittable types
