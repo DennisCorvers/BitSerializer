@@ -128,7 +128,7 @@ namespace BitSerializer
                 else
                 {
                     int newSize = MathUtils.GetNextMultipleOf8(ByteLength << 1);
-                    m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, newSize);
+                    m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, m_bitLength >> 3, newSize);
                     m_bitLength = newSize << 3;
                 }
             }
@@ -336,7 +336,7 @@ namespace BitSerializer
             }
             else if (bitLength > m_bitLength)
             {
-                m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, length);
+                m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, m_bitLength >> 3, length);
                 m_bitLength = bitLength;
             }
 

@@ -29,4 +29,10 @@
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
