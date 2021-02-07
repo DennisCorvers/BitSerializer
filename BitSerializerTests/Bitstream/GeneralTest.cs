@@ -21,6 +21,23 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
+        public void SizeTest()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(60);
+
+            // Rounded to next multiple of 8 = 64;
+            Assert.AreEqual(64, bs.ByteLength);
+            Assert.AreEqual(64 * 8, bs.BitLength);
+
+            bs.WriteInt32(1, 28);
+            Assert.AreEqual(28, bs.BitOffset);
+            Assert.AreEqual(28 / (double)8, bs.ByteOffset);
+
+            Assert.AreEqual(4, bs.BytesUsed);
+        }
+
+        [Test]
         public void ResetReadTest1()
         {
             BitStream bs = new BitStream();
@@ -150,26 +167,87 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
-        public void NextMultipleOf8Test()
+        public unsafe void SizePrefixTest()
         {
-            Assert.AreEqual(0, GetNextMultipleOf8(7) % 8);
-            Assert.AreEqual(8, GetNextMultipleOf8(3));
-            Assert.AreEqual(8, GetNextMultipleOf8(8));
+            BitStream bs = new BitStream();
+            bs.ResetWrite(64);
 
-            int GetNextMultipleOf8(int num)
+            bs.ReserveSizePrefix();
+
+            Assert.AreEqual(4, bs.ByteOffset);
+
+            // Write some random data.
+            var bits = 32;
+            for (int i = 0; i < 8; i++)
             {
-                return (num + 7) & (-8);
+                bs.WriteInt32(i + 1, 7);
+                bits += 7;
             }
+            Assert.AreEqual(bits, bs.BitOffset);
+
+            int bytesUsed = bs.BytesUsed;
+
+            // Prefix the size and make sure the offset remains unchanged.
+            Assert.AreEqual(bytesUsed, bs.PrefixSize());
+            Assert.AreEqual(bits, bs.BitOffset);
+
+            var newbs = new BitStream();
+            newbs.ResetRead(bs.TransferBuffer(), bs.ByteLength, false);
+
+            // Read the length of the buffer.
+            // Must be read as uint due to Zig/Zagging of int value.
+            Assert.AreEqual(bytesUsed, newbs.ReadUInt32());
+
+            for (int i = 0; i < 8; i++)
+                Assert.AreEqual(i + 1, newbs.ReadInt32(7));
+
+            Assert.AreEqual(bs.BitOffset, newbs.BitOffset);
         }
 
         [Test]
-        public void BitsToBytes()
+        public void TransferBufferTest()
         {
-            Assert.AreEqual(0, 0 >> 3);
-            Assert.AreEqual(0, 1 >> 3);
-            Assert.AreEqual(1, 8 >> 3);
-            Assert.AreEqual(8, 65 >> 3);
-            Assert.AreEqual(1, 9 >> 3);
+            BitStream bs = new BitStream();
+            bs.ResetWrite(16);
+
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            IntPtr itsMyBufferNow = bs.TransferBuffer();
+
+            Assert.IsFalse(bs.OwnsBuffer);
+        }
+
+        [Test]
+        public void ExpandFailTest()
+        {
+            BitStream bs = new BitStream();
+            IntPtr ptr = Marshal.AllocHGlobal(9);
+
+            bs.ResetWrite(ptr, 9, false);
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.WriteLong(1);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                bs.WriteLong(2);
+            });
+
+            Assert.AreEqual(8, bs.ByteLength);
+        }
+
+        [Test]
+        public void ExpandTest()
+        {
+            BitStream bs = new BitStream();
+
+            bs.ResetWrite(7);
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.WriteLong(1);
+            bs.WriteLong(2);
+
+            Assert.AreEqual(16, bs.ByteLength);
         }
     }
 }

@@ -83,6 +83,12 @@ namespace BitSerializer.Utils
             return (num + 7) & (-8);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetPreviousMultipleOf8(int num)
+        {
+            return (num) & (-8);
+        }
+
         public static byte Log2_32(uint value)
         {
             value |= value >> 1;

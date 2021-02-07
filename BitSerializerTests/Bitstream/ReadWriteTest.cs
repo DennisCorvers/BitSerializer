@@ -1,5 +1,6 @@
 ﻿using BitSerializer;
 using NUnit.Framework;
+using System;
 
 namespace BitSerializer.Bitstream
 {
@@ -122,6 +123,28 @@ namespace BitSerializer.Bitstream
             m_stream.Zeroes(5);
             Assert.AreEqual(value, m_stream.ReadInt32());
             Assert.AreEqual(37, m_stream.BitOffset);
+        }
+
+        [TestCase]
+        public void WriteZeroesTest()
+        {
+            m_stream.Zeroes(64);
+            Assert.AreEqual(64, m_stream.BitOffset);
+
+            m_stream.ResetRead();
+            m_stream.Zeroes(65);
+            Assert.AreEqual(65, m_stream.BitOffset);
+        }
+
+        [Test]
+        public void ZeroesFailTest()
+        {
+            // This call is ignored.
+            m_stream.ResetWrite();
+            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Zeroes(-1); });
+
+            m_stream.ResetRead();
+            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Zeroes(-1); });
         }
 
         [TestCase]

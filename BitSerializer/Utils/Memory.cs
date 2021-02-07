@@ -11,16 +11,19 @@ namespace BitSerializer.Utils
         {
             return Marshal.AllocHGlobal(size);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dealloc(IntPtr ptr)
         {
             Marshal.FreeHGlobal(ptr);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dealloc(void* ptr)
         {
             Marshal.FreeHGlobal((IntPtr)ptr);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr Realloc(IntPtr ptr, int size)
         {
