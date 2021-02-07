@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BitSerializer.Utils
 {
-    public static class MathUtils
+    internal static class MathUtils
     {
         private static readonly byte[] TAB64 = new byte[64] {
             63,  0, 58,  1, 59, 47, 53,  2,
@@ -75,6 +75,12 @@ namespace BitSerializer.Utils
         public static int GetNextMultiple(int num, int multiple)
         {
             return (num + multiple - 1) / multiple * multiple;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetNextMultipleOf8(int num)
+        {
+            return (num + 7) & (-8);
         }
 
         public static byte Log2_32(uint value)

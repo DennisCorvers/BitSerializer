@@ -38,7 +38,7 @@ namespace BitSerializer.Bitstream
             BitStream bs = new BitStream();
             bs.ResetRead(new byte[22], 2, 20);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => bs.ResetRead(new byte[22], 2, 21));
+            Assert.Throws<ArgumentException>(() => bs.ResetRead(new byte[22], 2, 21));
 
             Assert.AreEqual(24, bs.ByteLength);
             Assert.AreEqual(24 << 3, bs.BitLength);
@@ -52,7 +52,7 @@ namespace BitSerializer.Bitstream
             BitStream bs = new BitStream();
             Assert.Throws<ArgumentNullException>(() => bs.ResetRead((IntPtr)null, 10));
 
-            IntPtr ptr = Memory.Alloc(30);
+            IntPtr ptr = Marshal.AllocHGlobal(30);
             bs.ResetRead(ptr, 30);
 
             Assert.AreEqual(32 << 3, bs.BitLength);
@@ -147,6 +147,29 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(value, *(ulong*)reader.Buffer);
 
             reader.Dispose();
+        }
+
+        [Test]
+        public void NextMultipleOf8Test()
+        {
+            Assert.AreEqual(0, GetNextMultipleOf8(7) % 8);
+            Assert.AreEqual(8, GetNextMultipleOf8(3));
+            Assert.AreEqual(8, GetNextMultipleOf8(8));
+
+            int GetNextMultipleOf8(int num)
+            {
+                return (num + 7) & (-8);
+            }
+        }
+
+        [Test]
+        public void BitsToBytes()
+        {
+            Assert.AreEqual(0, 0 >> 3);
+            Assert.AreEqual(0, 1 >> 3);
+            Assert.AreEqual(1, 8 >> 3);
+            Assert.AreEqual(8, 65 >> 3);
+            Assert.AreEqual(1, 9 >> 3);
         }
     }
 }

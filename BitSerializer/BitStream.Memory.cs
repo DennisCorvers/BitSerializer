@@ -11,12 +11,14 @@ namespace BitSerializer
             WriteMemory((void*)ptr, byteSize);
             return this;
         }
+
         public BitStream WriteMemory(void* ptr, int byteSize)
         {
-            int numLongs = byteSize / 8;
+            int numLongs = byteSize >> 3;
             ulong* p = (ulong*)ptr;
+
             for (int i = 0; i < numLongs; i++)
-            { Write(p[i], 64); }
+                Write(p[i], 64);
 
             byte* bptr = (byte*)&p[numLongs];
             for (int i = byteSize - numLongs * 8; i > 0; i--)
@@ -24,22 +26,28 @@ namespace BitSerializer
                 WriteByte(*bptr);
                 bptr++;
             }
+
             return this;
         }
 
         public void ReadMemory(IntPtr ptr, int byteSize)
-        { ReadMemory((void*)ptr, byteSize); }
+        {
+            ReadMemory((void*)ptr, byteSize);
+        }
+
         public void ReadMemory(void* ptr, int byteSize)
         {
-            int numLongs = byteSize / 8;
+            int numLongs = byteSize >> 3;
+
             ulong* p = (ulong*)ptr;
             for (int i = 0; i < numLongs; i++)
-            { p[i] = Read(64); }
+                p[i] = Read(64);
 
             byte* bptr = (byte*)&p[numLongs];
             for (int i = byteSize - numLongs * sizeof(ulong); i > 0; i--)
             {
-                *bptr = ReadByte(); bptr++;
+                *bptr = ReadByte();
+                bptr++;
             }
         }
 
@@ -53,10 +61,13 @@ namespace BitSerializer
                 WriteUShort((ushort)count);
 
             fixed (byte* ptr = &bytes[offset])
-            { WriteMemory(ptr, count); }
+            {
+                WriteMemory(ptr, count);
+            }
 
             return this;
         }
+
         public void ReadBytes(byte[] bytes, int offset, int count)
         {
             Debug.Assert(bytes.Length >= offset + count, "Offset and count exceed array size");
@@ -64,8 +75,11 @@ namespace BitSerializer
             Debug.Assert(count > 0, "Count must be at least 1");
 
             fixed (byte* ptr = &bytes[offset])
-            { ReadMemory(ptr, count); ; }
+            {
+                ReadMemory(ptr, count); ;
+            }
         }
+
         public byte[] ReadBytesLength()
         {
             ushort length = ReadUShort();
@@ -79,13 +93,19 @@ namespace BitSerializer
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(byte[] buffer)
-        { CopyTo(buffer, 0, BytesUsed); }
+        {
+            CopyTo(buffer, 0, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(byte[] buffer, int destinationIndex)
-        { CopyTo(buffer, destinationIndex, BytesUsed); }
+        {
+            CopyTo(buffer, destinationIndex, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
@@ -99,18 +119,25 @@ namespace BitSerializer
             Memory.CopyMemory(new IntPtr(m_buffer), 0, buffer, destinationIndex, length);
         }
 
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(IntPtr ptr)
-        { CopyTo(ptr, 0, BytesUsed); }
+        {
+            CopyTo(ptr, 0, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(IntPtr ptr, int destinationIndex)
-        { CopyTo(ptr, destinationIndex, BytesUsed); }
+        {
+            CopyTo(ptr, destinationIndex, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
@@ -124,18 +151,25 @@ namespace BitSerializer
             Memory.CopyMemory(new IntPtr(m_buffer), 0, ptr, destinationIndex, length);
         }
 
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(void* ptr)
-        { CopyTo(ptr, 0, BytesUsed); }
+        {
+            CopyTo(ptr, 0, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
         /// <param name="buffer">The destination for the data.</param>
         public void CopyTo(void* ptr, int destinationIndex)
-        { CopyTo(ptr, destinationIndex, BytesUsed); }
+        {
+            CopyTo(ptr, destinationIndex, BytesUsed);
+        }
+
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>

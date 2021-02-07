@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace BitSerializer.Utils
 {
-    public unsafe static class Memory
+    internal unsafe static class Memory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr Alloc(int size)
@@ -21,7 +19,7 @@ namespace BitSerializer.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dealloc(void* ptr)
         {
-            Dealloc((IntPtr)ptr);
+            Marshal.FreeHGlobal((IntPtr)ptr);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr Realloc(IntPtr ptr, int size)
@@ -46,11 +44,9 @@ namespace BitSerializer.Utils
             if (destinationIndex < 0 || length < 0)
             { throw new ArgumentOutOfRangeException("Index and Length must be greater than 0"); }
 
-            Buffer.MemoryCopy(
-                (source + sourceIndex).ToPointer(),
-                (destination + destinationIndex).ToPointer(),
-                length, length);
+            Buffer.MemoryCopy(((byte*)source) + sourceIndex, ((byte*)destination) + destinationIndex, length, length);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(byte[] source, int sourceIndex, IntPtr destination, int destinationIndex, int length)
         {
@@ -59,14 +55,9 @@ namespace BitSerializer.Utils
             if (sourceIndex < 0 || length < 0)
             { throw new ArgumentOutOfRangeException("Index and Length must be greater than 0"); }
 
-            fixed (byte* src = &source[sourceIndex])
-            {
-                Buffer.MemoryCopy(
-                  src,
-                  (destination + destinationIndex).ToPointer(),
-                  length, length);
-            }
+            Marshal.Copy(source, sourceIndex, destination + destinationIndex, length);
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(IntPtr source, int sourceIndex, byte[] destination, int destinationIndex, int length)
         {
@@ -75,13 +66,7 @@ namespace BitSerializer.Utils
             if (destinationIndex < 0 || length < 0)
             { throw new ArgumentOutOfRangeException("Index and Length must be greater than 0"); }
 
-            fixed (byte* dst = &destination[destinationIndex])
-            {
-                Buffer.MemoryCopy(
-                  (source + sourceIndex).ToPointer(),
-                  dst,
-                  length, length);
-            }
+            Marshal.Copy(source + sourceIndex, destination, destinationIndex, length);
         }
     }
 }

@@ -4,6 +4,9 @@ namespace BitSerializer
 {
     public unsafe partial class BitStream
     {
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitStream WriteBlit<T>(T value)
             where T : unmanaged
@@ -11,6 +14,10 @@ namespace BitSerializer
             WriteMemory(&value, sizeof(T));
             return this;
         }
+
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitStream WriteBlit<T>(T* value)
             where T : unmanaged
@@ -19,6 +26,9 @@ namespace BitSerializer
             return this;
         }
 
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitStream ReadBlit<T>(T* value)
             where T : unmanaged
@@ -26,6 +36,10 @@ namespace BitSerializer
             ReadMemory(value, sizeof(T));
             return this;
         }
+
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T ReadBlit<T>()
             where T : unmanaged
@@ -35,6 +49,9 @@ namespace BitSerializer
             return *value;
         }
 
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SerializeBlit<T>(ref T value)
             where T : unmanaged
@@ -42,6 +59,10 @@ namespace BitSerializer
             if (m_mode == SerializationMode.Writing) WriteBlit(value);
             else value = ReadBlit<T>();
         }
+
+        /// <summary>
+        /// Only use this with types that have a strict layout!
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitStream SerializeBlit<T>(T* value)
             where T : unmanaged

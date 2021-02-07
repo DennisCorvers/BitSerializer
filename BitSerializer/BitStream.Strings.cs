@@ -8,24 +8,33 @@ namespace BitSerializer
     {
         public const byte StringLengthMax = byte.MaxValue;
 
+
         public BitStream WriteString(string str, Encoding encoding)
         {
-            if (str == null) { throw new ArgumentNullException("str"); }
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
 
             fixed (char* ptr = str)
-            { WriteString(ptr, str.Length, encoding); }
+            {
+                WriteString(ptr, str.Length, encoding);
+            }
 
             return this;
         }
+
         public BitStream WriteString(char[] str, Encoding encoding)
         {
-            if (str == null) { throw new ArgumentNullException("str"); }
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
 
             fixed (char* ptr = str)
-            { WriteString(ptr, str.Length, encoding); }
+            {
+                WriteString(ptr, str.Length, encoding);
+            }
 
             return this;
         }
+
         public BitStream WriteString(char* ptr, int charCount, Encoding encoding)
         {
             if (charCount > StringLengthMax)
@@ -41,6 +50,7 @@ namespace BitSerializer
             return this;
         }
 
+
         public string ReadString(Encoding encoding)
         {
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
@@ -52,25 +62,34 @@ namespace BitSerializer
             ReadMemory(buffer, byteCount);
             return new string((sbyte*)buffer, 0, byteCount, encoding);
         }
+
         public int ReadString(char[] destination, int offset, Encoding encoding)
         {
-            Debug.Assert(offset < destination.Length, "Offset exceeds array size.");
+            if ((uint)offset >= destination.Length)
+                throw new ArgumentOutOfRangeException("Offset exceeds array size.");
+
 
             fixed (char* ptr = &destination[offset])
-            { return ReadStringInternal(ptr, destination.Length - offset, encoding); }
+            {
+                return ReadStringInternal(ptr, destination.Length - offset, encoding);
+            }
         }
+
         public int ReadString(char* ptr, int charLength, Encoding encoding)
         {
             return ReadStringInternal(ptr, charLength, encoding);
         }
+
         private int ReadStringInternal(char* str, int charLength, Encoding encoding)
         {
-            Debug.Assert(charLength > 0, "charLength must be at least 1.");
+            if (charLength < 1)
+                throw new ArgumentException("charLength must be at least 1.", nameof(charLength));
 
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
 
             if (byteCount == 0)
                 return 0;
+
             if (byteCount > 1024)
                 return byteCount;
 
