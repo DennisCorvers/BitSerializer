@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace BitSerializer.Bitstream
 {
     [TestFixture]
-    internal class GeneralTest
+    internal unsafe class GeneralTests
     {
         [Test]
         public void CTorTest()
@@ -38,6 +38,16 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
+        public void ResetWithoutBufferTest()
+        {
+            BitStream bs = new BitStream();
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                bs.ResetRead();
+            });
+        }
+
+        [Test]
         public void ResetReadTest1()
         {
             BitStream bs = new BitStream();
@@ -46,6 +56,7 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(16, bs.ByteLength);
             Assert.AreEqual(16 << 3, bs.BitLength);
             Assert.AreEqual(0, bs.BitOffset);
+            Assert.IsTrue(bs.OwnsBuffer);
             bs.Dispose();
         }
 
@@ -55,7 +66,7 @@ namespace BitSerializer.Bitstream
             BitStream bs = new BitStream();
             bs.ResetRead(new byte[22], 2, 20);
 
-            Assert.Throws<ArgumentException>(() => bs.ResetRead(new byte[22], 2, 21));
+            Assert.Throws<ArgumentOutOfRangeException>(() => bs.ResetRead(new byte[22], 2, 21));
 
             Assert.AreEqual(24, bs.ByteLength);
             Assert.AreEqual(24 << 3, bs.BitLength);
@@ -70,7 +81,7 @@ namespace BitSerializer.Bitstream
             Assert.Throws<ArgumentNullException>(() => bs.ResetRead((IntPtr)null, 10));
 
             IntPtr ptr = Marshal.AllocHGlobal(30);
-            bs.ResetRead(ptr, 30);
+            bs.ResetRead(ptr, 30, true);
 
             Assert.AreEqual(32 << 3, bs.BitLength);
             Assert.AreEqual(0, bs.BitOffset);
@@ -107,10 +118,133 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(24, bs.ByteLength);
 
             bs.Dispose();
+            Assert.AreEqual(IntPtr.Zero, bs.Buffer);
         }
 
         [Test]
-        public void DisposeTest()
+        public void ResetWriteInvalid()
+        {
+            BitStream bs = new BitStream();
+
+            IntPtr buff = Memory.Alloc(16);
+            *(byte*)buff = 212;
+
+            bs.ResetWrite(8);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                bs.ResetWrite(buff, 16);
+            });
+
+        }
+
+        [Test]
+        public void ResetWriteCopyBufferNull()
+        {
+            BitStream bs = new BitStream();
+
+            IntPtr buff = Memory.Alloc(16);
+            *(byte*)buff = 212;
+
+            bs.ResetWrite(buff, 16, true);
+            Assert.AreEqual(16, bs.ByteLength);
+            Assert.AreEqual(16, bs.ByteOffset);
+
+            bs.ResetRead();
+            Assert.AreEqual(212, bs.ReadByte());
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            Memory.Free(buff);
+        }
+
+        [Test]
+        public void ResetWriteCopyBufferTooSmall()
+        {
+            BitStream bs = new BitStream();
+
+            IntPtr buff = Memory.Alloc(16);
+            *(byte*)buff = 212;
+
+            bs.ResetWrite(8);
+
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.ResetWrite(buff, 16, true);
+            Assert.AreEqual(16, bs.ByteLength);
+            Assert.AreEqual(16, bs.ByteOffset);
+
+            bs.ResetRead();
+            Assert.AreEqual(212, bs.ReadByte());
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            Memory.Free(buff);
+        }
+
+        [Test]
+        public void ResetWriteCopy()
+        {
+            BitStream bs = new BitStream();
+
+            IntPtr buff = Memory.Alloc(16);
+            *(byte*)buff = 212;
+
+            bs.ResetWrite(32);
+
+            Assert.AreEqual(32, bs.ByteLength);
+
+            bs.ResetWrite(buff, 16, true);
+            Assert.AreEqual(32, bs.ByteLength);
+            Assert.AreEqual(16, bs.ByteOffset);
+
+            bs.ResetRead();
+            Assert.AreEqual(212, bs.ReadByte());
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            Memory.Free(buff);
+        }
+
+        [Test]
+        public void ResetWriteOwnsBufferTest()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(16);
+            bs.WriteByte(1);
+            bs.WriteByte(2);
+
+            Assert.AreEqual(16, bs.BitOffset);
+            Assert.AreEqual(16, bs.ByteLength);
+
+            // Confirm values are there.
+            bs.ResetRead();
+            Assert.AreEqual(1, bs.ReadByte());
+            Assert.AreEqual(2, bs.ReadByte());
+
+            bs.ResetWrite();
+            Assert.AreEqual(0, bs.BitOffset);
+            Assert.AreEqual(16, bs.ByteLength);
+
+            // Confirm values have been zeroed.
+            bs.ResetRead();
+            Assert.AreEqual(0, bs.ReadByte());
+        }
+
+        [Test]
+        public void ResetReadOffsetTest()
+        {
+            var arr = new byte[16];
+            arr[5] = 123;
+
+            BitStream bs = new BitStream();
+            bs.ResetRead(arr, 5, 10);
+
+            Assert.AreEqual(16, bs.ByteLength);
+            Assert.AreEqual(0, bs.ByteOffset);
+
+            Assert.AreEqual(123, bs.ReadByte());
+        }
+
+        [Test]
+        public void DisposeWriterTest()
         {
             BitStream bs = new BitStream();
             bs.Dispose();
@@ -143,20 +277,17 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(0, reader.BitOffset);
 
             Assert.AreEqual(value, reader.ReadULong());
-
-            reader.Dispose();
-            Assert.AreEqual(IntPtr.Zero, reader.Buffer);
         }
 
         [Test]
         public unsafe void WriteBufferCopyTest()
         {
-            ulong value = 120938129485132;
+            ulong value = 666;
             IntPtr buf = Marshal.AllocHGlobal(8);
 
             BitStream reader = new BitStream();
             reader.ResetWrite(buf, 8, false);
-            reader.WriteULong(value);
+            reader.WriteULong(value, 64);
 
             Assert.AreEqual(64, reader.BitLength);
             Assert.AreEqual(64, reader.BitOffset);
@@ -192,7 +323,7 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(bits, bs.BitOffset);
 
             var newbs = new BitStream();
-            newbs.ResetRead(bs.TransferBuffer(), bs.ByteLength, false);
+            newbs.ResetRead(bs.Buffer, bs.ByteLength, false);
 
             // Read the length of the buffer.
             // Must be read as uint due to Zig/Zagging of int value.
@@ -202,19 +333,6 @@ namespace BitSerializer.Bitstream
                 Assert.AreEqual(i + 1, newbs.ReadInt32(7));
 
             Assert.AreEqual(bs.BitOffset, newbs.BitOffset);
-        }
-
-        [Test]
-        public void TransferBufferTest()
-        {
-            BitStream bs = new BitStream();
-            bs.ResetWrite(16);
-
-            Assert.IsTrue(bs.OwnsBuffer);
-
-            IntPtr itsMyBufferNow = bs.TransferBuffer();
-
-            Assert.IsFalse(bs.OwnsBuffer);
         }
 
         [Test]
@@ -248,6 +366,49 @@ namespace BitSerializer.Bitstream
             bs.WriteLong(2);
 
             Assert.AreEqual(16, bs.ByteLength);
+        }
+
+        [Test]
+        public void ZeroLargeTest()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(8);
+
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.Zeroes(20 << 3);
+
+            Assert.AreEqual(24, bs.ByteLength);
+        }
+
+        [Test]
+        public void CopyWithoutResize()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(64);
+
+            Assert.AreEqual(64, bs.ByteLength);
+
+            bs.ResetRead(new byte[16]);
+            Assert.AreEqual(64, bs.ByteLength);
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            bs.Dispose();
+        }
+
+        [Test]
+        public void CopyWithResize()
+        {
+            BitStream bs = new BitStream();
+            bs.ResetWrite(8);
+
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.ResetRead(new byte[16]);
+            Assert.AreEqual(16, bs.ByteLength);
+            Assert.IsTrue(bs.OwnsBuffer);
+
+            bs.Dispose();
         }
     }
 }

@@ -14,9 +14,12 @@ namespace BitSerializer.Bitstream
         {
             m_stream.ResetWrite(64);
         }
+
         [OneTimeTearDown]
         public void TearDown()
-        { m_stream.Dispose(); }
+        {
+            m_stream.Dispose();
+        }
 
 
         [TestCase(-1532)]
@@ -48,7 +51,8 @@ namespace BitSerializer.Bitstream
             const float fVal = float.MinValue / 5;
             const short sVal = -12345;
             const int offset = 113;
-
+            m_stream = new BitStream();
+            m_stream.ResetWrite(64);
             m_stream.WriteBool(bVal);
             m_stream.WriteDouble(dVal);
             m_stream.WriteFloat(fVal);
@@ -147,7 +151,7 @@ namespace BitSerializer.Bitstream
             Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Zeroes(-1); });
         }
 
-        [TestCase]
+        [Test]
         public void BuilderTest()
         {
             const uint uintVal = 598135039;
@@ -168,6 +172,22 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(longVal, m_stream.ReadLong());
             Assert.AreEqual(charVal, m_stream.ReadChar());
             Assert.AreEqual(decVal, m_stream.ReadDecimal());
+        }
+
+        [Test]
+        public void ReadWriteIntTest()
+        {
+            int val = 123456789;
+            BitStream bs = new BitStream();
+            bs.ResetWrite(64);
+
+            bs.WriteInt32(val);
+
+            Assert.AreEqual(32, bs.BitOffset);
+
+            bs.ResetRead();
+
+            Assert.AreEqual(val, bs.ReadInt32());
         }
     }
 }

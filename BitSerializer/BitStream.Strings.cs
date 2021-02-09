@@ -8,7 +8,9 @@ namespace BitSerializer
     {
         public const byte StringLengthMax = byte.MaxValue;
 
-
+        /// <summary>
+        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
+        /// </summary>
         public BitStream WriteString(string str, Encoding encoding)
         {
             if (str == null)
@@ -22,6 +24,9 @@ namespace BitSerializer
             return this;
         }
 
+        /// <summary>
+        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
+        /// </summary>
         public BitStream WriteString(char[] str, Encoding encoding)
         {
             if (str == null)
@@ -35,6 +40,9 @@ namespace BitSerializer
             return this;
         }
 
+        /// <summary>
+        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
+        /// </summary>
         public BitStream WriteString(char* ptr, int charCount, Encoding encoding)
         {
             if (charCount > StringLengthMax)
@@ -50,7 +58,9 @@ namespace BitSerializer
             return this;
         }
 
-
+        /// <summary>
+        /// Reads a string from the <see cref="BitStream"/>.
+        /// </summary>
         public string ReadString(Encoding encoding)
         {
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
@@ -63,6 +73,9 @@ namespace BitSerializer
             return new string((sbyte*)buffer, 0, byteCount, encoding);
         }
 
+        /// <summary>
+        /// Reads a string from the <see cref="BitStream"/>.
+        /// </summary>
         public int ReadString(char[] destination, int offset, Encoding encoding)
         {
             if ((uint)offset >= destination.Length)
@@ -75,6 +88,9 @@ namespace BitSerializer
             }
         }
 
+        /// <summary>
+        /// Reads a string from the <see cref="BitStream"/>.
+        /// </summary>
         public int ReadString(char* ptr, int charLength, Encoding encoding)
         {
             return ReadStringInternal(ptr, charLength, encoding);
@@ -83,15 +99,12 @@ namespace BitSerializer
         private int ReadStringInternal(char* str, int charLength, Encoding encoding)
         {
             if (charLength < 1)
-                throw new ArgumentException("charLength must be at least 1.", nameof(charLength));
+                throw new ArgumentOutOfRangeException(nameof(charLength), "charLength must be at least 1.");
 
             ushort byteCount = Math.Min(ReadUShort(), (ushort)(StringLengthMax * 4));
 
             if (byteCount == 0)
                 return 0;
-
-            if (byteCount > 1024)
-                return byteCount;
 
             byte* buffer = stackalloc byte[byteCount];
             int charCount = Math.Min(encoding.GetCharCount(buffer, byteCount), charLength);

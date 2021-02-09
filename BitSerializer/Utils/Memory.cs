@@ -21,7 +21,7 @@ namespace BitSerializer.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Dealloc(IntPtr ptr)
+        public static void Free(IntPtr ptr)
         {
 #if UNITY
             UnsafeUtility.Free((void*)ptr, Unity.Collections.Allocator.Persistent);
@@ -31,7 +31,7 @@ namespace BitSerializer.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Dealloc(void* ptr)
+        public static void Free(void* ptr)
         {
 #if UNITY
             UnsafeUtility.Free(ptr, Unity.Collections.Allocator.Persistent);
@@ -44,25 +44,66 @@ namespace BitSerializer.Utils
         public static IntPtr Realloc(IntPtr ptr, int size, int newSize)
         {
             Debug.Assert(newSize > size);
-#if UNITY
-            IntPtr newBuffer = Alloc(newSize);
-            CopyMemory(ptr, 0, newBuffer, 0, size);
 
-            // Free the old buffer and return the new one.
-            Dealloc(ptr);
+            // Create new buffer and copy old contents to new.
+            IntPtr newBuffer = Alloc(newSize);
+            CopyMemory((void*)ptr, (void*)newBuffer, size);
+
+            // Free old buffer and return new buffer.
+            Free(ptr);
             return newBuffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ZeroMem(void* ptr, long size)
+        {
+#if UNITY
+            UnsafeUtility.MemClear(ptr, size);
 #else
-            return Marshal.ReAllocHGlobal(ptr, (IntPtr)size);
+            long c = size >> 3; // longs
+
+            int i = 0;
+            for (; i < c; i++)
+                *((ulong*)ptr + i) = 0;
+
+            i = i << 3;
+            for (; i < size; i++)
+                *((byte*)ptr + i) = 0;
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IntPtr AllocZeroed(int size)
+        {
+            var memory = Alloc(size);
+            ZeroMem((void*)memory, size);
+            return memory;
+        }
+
+        public static IntPtr ReallocZeroed(IntPtr ptr, int size, int newSize)
+        {
+            // Realloc existing buffer.
+            var newBuffer = Realloc(ptr, size, newSize);
+
+            // Zero newly allocated bytes after copy.
+            ZeroMem(((byte*)newBuffer) + size, newSize - size);
+
+            return newBuffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static void CopyMemory(void* source, void* destination, int length)
+        {
+#if UNITY
+            UnsafeUtility.MemCpy(destination, source, length);
+#else
+            Buffer.MemoryCopy(source, destination, length, length);
 #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(void* source, int sourceIndex, void* destination, int destinationIndex, int length)
         {
-            Debug.Assert(destinationIndex >= 0);
-            Debug.Assert(sourceIndex >= 0);
-            Debug.Assert(length >= 0);
-
 #if UNITY
             UnsafeUtility.MemCpy((byte*)destination + destinationIndex, (byte*)source + sourceIndex, length);
 #else
@@ -72,6 +113,7 @@ namespace BitSerializer.Utils
                 length, length);
 #endif
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(IntPtr source, int sourceIndex, IntPtr destination, int destinationIndex, int length)
         {
@@ -81,10 +123,6 @@ namespace BitSerializer.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(byte[] source, int sourceIndex, IntPtr destination, int destinationIndex, int length)
         {
-            if (source.Length < sourceIndex + length)
-                throw new ArgumentOutOfRangeException("Offset exceeds buffer size.");
-            if (sourceIndex < 0 || length < 0)
-                throw new ArgumentOutOfRangeException("Index and Length must be greater than 0");
 #if UNITY
             fixed (byte* ptr = source)
             {
@@ -93,17 +131,11 @@ namespace BitSerializer.Utils
 #else
             Marshal.Copy(source, sourceIndex, destination + destinationIndex, length);
 #endif
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void CopyMemory(IntPtr source, int sourceIndex, byte[] destination, int destinationIndex, int length)
         {
-            if (destination.Length < destinationIndex + length)
-                throw new ArgumentOutOfRangeException("Offset exceeds buffer size.");
-            if (destinationIndex < 0 || length < 0)
-                throw new ArgumentOutOfRangeException("Index and Length must be greater than 0");
-
 #if UNITY
             fixed (byte* ptr = &destination[destinationIndex])
             {

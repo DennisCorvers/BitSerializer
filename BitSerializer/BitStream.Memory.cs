@@ -6,14 +6,26 @@ namespace BitSerializer
 {
     public unsafe partial class BitStream
     {
+        /// <summary>
+        /// Writes raw data to the <see cref="BitStream"/>.
+        /// </summary>
         public BitStream WriteMemory(IntPtr ptr, int byteSize)
         {
             WriteMemory((void*)ptr, byteSize);
             return this;
         }
 
+        /// <summary>
+        /// Writes raw data to the <see cref="BitStream"/>.
+        /// </summary>
         public BitStream WriteMemory(void* ptr, int byteSize)
         {
+            if (byteSize < 0)
+                throw new ArgumentOutOfRangeException(nameof(byteSize));
+
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
+
             int numLongs = byteSize >> 3;
             ulong* p = (ulong*)ptr;
 
@@ -30,13 +42,25 @@ namespace BitSerializer
             return this;
         }
 
+        /// <summary>
+        /// Reads raw data from the <see cref="BitStream"/>.
+        /// </summary>
         public void ReadMemory(IntPtr ptr, int byteSize)
         {
             ReadMemory((void*)ptr, byteSize);
         }
 
+        /// <summary>
+        /// Reads raw data from the <see cref="BitStream"/>.
+        /// </summary>
         public void ReadMemory(void* ptr, int byteSize)
         {
+            if (byteSize < 0)
+                throw new ArgumentOutOfRangeException(nameof(byteSize));
+
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
+
             int numLongs = byteSize >> 3;
 
             ulong* p = (ulong*)ptr;
@@ -51,11 +75,16 @@ namespace BitSerializer
             }
         }
 
+        /// <summary>
+        /// Writes bytes to the <see cref="BitStream"/>.
+        /// </summary>
         public BitStream WriteBytes(byte[] bytes, int offset, int count, bool includeSize = false)
         {
-            Debug.Assert(bytes.Length >= offset + count, "Offset and count exceed array size");
-            Debug.Assert(offset >= 0, "Offset must be at least 0");
-            Debug.Assert(count > 0, "Count must be at least 1");
+            if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+
+            if ((uint)offset + (uint)count > bytes.Length)
+                throw new ArgumentOutOfRangeException("Offset and count exceed array size");
 
             if (includeSize)
                 WriteUShort((ushort)count);
@@ -68,11 +97,16 @@ namespace BitSerializer
             return this;
         }
 
+        /// <summary>
+        /// Reads bytes from the <see cref="BitStream"/>.
+        /// </summary>
         public void ReadBytes(byte[] bytes, int offset, int count)
         {
-            Debug.Assert(bytes.Length >= offset + count, "Offset and count exceed array size");
-            Debug.Assert(offset >= 0, "Offset must be at least 0");
-            Debug.Assert(count > 0, "Count must be at least 1");
+            if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+
+            if ((uint)offset + (uint)count > bytes.Length)
+                throw new ArgumentOutOfRangeException("Offset and count exceed array size");
 
             fixed (byte* ptr = &bytes[offset])
             {
@@ -113,10 +147,13 @@ namespace BitSerializer
         /// <param name="length">The total length to copy (starting from 0)</param>
         public void CopyTo(byte[] buffer, int destinationIndex, int length)
         {
-            Debug.Assert(buffer != null, "ArgumentNull buffer");
-            Debug.Assert(length <= BytesUsed, "Length exceeds BitStream buffer size.");
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
 
-            Memory.CopyMemory(new IntPtr(m_buffer), 0, buffer, destinationIndex, length);
+            if ((uint)destinationIndex + (uint)length > buffer.Length)
+                throw new ArgumentOutOfRangeException("DestinationIndex and length exceed array size");
+
+            Memory.CopyMemory(new IntPtr(m_buffer), 0, buffer, destinationIndex, Math.Min(length, BytesUsed));
         }
 
 
@@ -145,10 +182,13 @@ namespace BitSerializer
         /// <param name="length">The total length to copy (starting from 0)</param>
         public void CopyTo(IntPtr ptr, int destinationIndex, int length)
         {
-            Debug.Assert(ptr != IntPtr.Zero, "ArgumentNull, bufffer.");
-            Debug.Assert(length <= BytesUsed, "Length exceeds BitStream buffer size.");
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
 
-            Memory.CopyMemory(new IntPtr(m_buffer), 0, ptr, destinationIndex, length);
+            if ((uint)destinationIndex > (uint)length)
+                throw new ArgumentOutOfRangeException("Length must be smaller than DestinationIndex");
+
+            Memory.CopyMemory(new IntPtr(m_buffer), 0, ptr, destinationIndex, Math.Min(length, BytesUsed));
         }
 
 
@@ -177,10 +217,13 @@ namespace BitSerializer
         /// <param name="length">The total length to copy (starting from 0)</param>
         public void CopyTo(void* ptr, int destinationIndex, int length)
         {
-            Debug.Assert(ptr != null, "ArgumentNull, bufffer.");
-            Debug.Assert(length <= BytesUsed, "Length exceeds BitStream buffer size.");
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
 
-            Memory.CopyMemory(m_buffer, 0, ptr, destinationIndex, length);
+            if ((uint)destinationIndex > (uint)length)
+                throw new ArgumentOutOfRangeException("Length must be smaller than DestinationIndex");
+
+            Memory.CopyMemory(m_buffer, 0, ptr, destinationIndex, Math.Min(length, BytesUsed));
         }
     }
 }
