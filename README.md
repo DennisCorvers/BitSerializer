@@ -59,8 +59,6 @@ public class Player
 ```
 # Usage
 
-Because the API is almost identical, the managed and unmanaged readers and writers function nearly identical. Be warned that when using the unmanaged reader or writer, the provided length must be no longer than the actual length of the memory block provided.
-
 It is important that you write and read back the values in the same order to keep data consistent (as shown in the write and read example).
 
 **BitStream is not inherently thread safe! Beware of accessing buffers concurrently from multiple threads and modifying the supplied buffers during operation!**
