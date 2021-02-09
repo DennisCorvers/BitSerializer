@@ -15,6 +15,7 @@
     <Description>BitSerializer offers serialization (reading and writing) of various data types. It uses either a build-in allocator (make sure to Dispose when using this!) or a supplied buffer. BitStream bitpacks data, meaning that data types such as a Boolean will take up 8 times less space! It also has several mechanisms of saving space when serializing floats and integer-types. It's an ideal serializer for when you want to minimize network traffic (such as in a game).</Description>
     <AssemblyName>BitSerializer</AssemblyName>
     <RootNamespace>BitSerializer</RootNamespace>
+    <Configurations>Debug;Release;Unity</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,6 +24,11 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unity|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;UNITY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
