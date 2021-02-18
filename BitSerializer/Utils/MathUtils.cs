@@ -129,5 +129,19 @@ namespace BitSerializer.Utils
         {
             return (min == max) ? 1 : Log2_64(max - min) + 1;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int BitsRequired(float min, float max, float precision)
+        {
+            float inv = 1.0f / precision;
+            float maxVal = (max - min) * inv;
+            return Log2_32((uint)(maxVal + 0.5f)) + 1;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int BitsRequired(float min, float max, float precision, out float inv)
+        {
+            inv = 1.0f / precision;
+            float maxVal = (max - min) * inv;
+            return Log2_32((uint)(maxVal + 0.5f)) + 1;
+        }
     }
 }

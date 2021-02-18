@@ -33,5 +33,17 @@ namespace BitSerializerTests.Utils
             Assert.AreEqual(0, MathUtils.GetPreviousMultipleOf8(7));
             Assert.AreEqual(8, MathUtils.GetPreviousMultipleOf8(9));
         }
+
+        [Test]
+        public void HalfFloatTest()
+        {
+            float original = (float)Math.PI;
+
+            var compressed = HalfPrecision.Compress(original);
+            var replica = HalfPrecision.Decompress(compressed);
+
+
+            Assert.AreEqual(original, replica, 0.001f);
+        }
     }
 }

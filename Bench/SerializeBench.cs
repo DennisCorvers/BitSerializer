@@ -1,11 +1,13 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BitSerializer;
+using BitSerializer.Utils;
 using ByteStream.Mananged;
 using ByteStream.Unmanaged;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using UnityEngine;
 
 namespace Bench
 {
@@ -26,7 +28,7 @@ namespace Bench
             Marshal.FreeHGlobal(m_ptrBuf);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void ByteWrite()
         {
             ByteWriter writer = new ByteWriter(m_byteBuf);
@@ -44,7 +46,7 @@ namespace Bench
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void PtrWrite()
         {
             PtrWriter writer = new PtrWriter(m_ptrBuf, SIZE);
@@ -62,10 +64,10 @@ namespace Bench
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void BitRead()
         {
-            BitStream stream = new BitStream();
+            BitStreamer stream = new BitStreamer();
             stream.ResetWrite(m_ptrBuf, SIZE, false);
 
             for (int i = 0; i < AMOUNT / 2; i++)
@@ -82,7 +84,7 @@ namespace Bench
             }
         }
 
-        [Benchmark(Baseline = true)]
+        //[Benchmark(Baseline = true)]
         public void ArraySegment()
         {
             ArraySegment<byte> writer = new ArraySegment<byte>(m_byteBuf);
@@ -112,7 +114,7 @@ namespace Bench
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void BitConvert()
         {
             int offset = 0;
@@ -128,6 +130,44 @@ namespace Bench
             {
                 int result = BitConverter.ToInt32(m_byteBuf, offset);
                 offset += sizeof(int);
+            }
+        }
+
+        [Benchmark]
+        public void VectorOld()
+        {
+            BitStreamer stream = new BitStreamer();
+            stream.ResetWrite(m_ptrBuf, SIZE, false);
+            Vector2 v = new Vector2(123.321f, 8810283094.3241827391f);
+
+            for (int i = 0; i < 256; i++)
+            {
+                stream.WriteVector2(v);
+            }
+
+            stream.ResetRead();
+            for (int i = 0; i < 256; i++)
+            {
+                var vect = stream.ReadVector2();
+            }
+        }
+
+        //[Benchmark]
+        public void VectorNew()
+        {
+            BitStreamer stream = new BitStreamer();
+            stream.ResetWrite(m_ptrBuf, SIZE, false);
+            Vector2 v = new Vector2(123.321f, 8810283094.3241827391f);
+
+            for (int i = 0; i < 256; i++)
+            {
+                stream.WriteVector2(v);
+            }
+
+            stream.ResetRead();
+            for (int i = 0; i < 256; i++)
+            {
+                var vect = stream.ReadVector2();
             }
         }
     }

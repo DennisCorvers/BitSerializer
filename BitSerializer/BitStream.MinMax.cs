@@ -4,75 +4,88 @@ using System.Runtime.CompilerServices;
 
 namespace BitSerializer
 {
-    public unsafe partial class BitStream
+    public unsafe partial class BitStreamer
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref float value, float min, float max, int bits)
+        public BitStreamer Serialize(ref float value, bool halfPrecision)
+        {
+            if (!halfPrecision)
+            {
+                if (m_mode == SerializationMode.Writing) WriteFloat(value);
+                else value = ReadFloat();
+            }
+            else
+            {
+                if (m_mode == SerializationMode.Writing) WriteHalf(value);
+                else value = ReadHalf();
+            }
+            return this;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BitStreamer Serialize(ref float value, float min, float max, int bits)
         {
             if (m_mode == SerializationMode.Writing) WriteFloat(value, min, max, bits);
             else value = ReadFloat(min, max, bits);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref float value, float min, float max, float precision)
+        public BitStreamer Serialize(ref float value, float min, float max, float precision)
         {
             if (m_mode == SerializationMode.Writing) WriteFloat(value, min, max, precision);
             else value = ReadFloat(min, max, precision);
             return this;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref sbyte value, sbyte min, sbyte max)
+        public BitStreamer Serialize(ref sbyte value, sbyte min, sbyte max)
         {
             if (m_mode == SerializationMode.Writing) WriteSByte(value, min, max);
             else value = ReadSByte(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref short value, short min, short max)
+        public BitStreamer Serialize(ref short value, short min, short max)
         {
             if (m_mode == SerializationMode.Writing) WriteShort(value, min, max);
             else value = ReadShort(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref int value, int min, int max)
+        public BitStreamer Serialize(ref int value, int min, int max)
         {
             if (m_mode == SerializationMode.Writing) WriteInt32(value, min, max);
             else value = ReadInt32(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref long value, long min, long max)
+        public BitStreamer Serialize(ref long value, long min, long max)
         {
             if (m_mode == SerializationMode.Writing) WriteLong(value, min, max);
             else value = ReadLong(min, max);
             return this;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref byte value, byte min, byte max)
+        public BitStreamer Serialize(ref byte value, byte min, byte max)
         {
             if (m_mode == SerializationMode.Writing) WriteByte(value, min, max);
             else value = ReadByte(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref ushort value, ushort min, ushort max)
+        public BitStreamer Serialize(ref ushort value, ushort min, ushort max)
         {
             if (m_mode == SerializationMode.Writing) WriteUShort(value, min, max);
             else value = ReadUShort(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref uint value, uint min, uint max)
+        public BitStreamer Serialize(ref uint value, uint min, uint max)
         {
             if (m_mode == SerializationMode.Writing) WriteUInt32(value, min, max);
             else value = ReadUInt32(min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref ulong value, ulong min, ulong max)
+        public BitStreamer Serialize(ref ulong value, ulong min, ulong max)
         {
             if (m_mode == SerializationMode.Writing) WriteULong(value, min, max);
             else value = ReadULong(min, max);
@@ -84,12 +97,10 @@ namespace BitSerializer
         {
             return HalfPrecision.Decompress((ushort)Read(16));
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float ReadFloat(float min, float max, int bits)
         {
-            Debug.Assert(bits > 0, "Minimum bit size is 1");
-            Debug.Assert(bits < 32, "Maximum bit size is 31.");
+            Debug.Assert(min <= max);
 
             var maxvalue = (1 << bits) - 1;
             float range = max - min;
@@ -100,13 +111,11 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float ReadFloat(float min, float max, float precision)
         {
-            float inv = 1.0f / precision;
-            float maxVal = (max - min) * inv;
-            int numBits = MathUtils.Log2_32((uint)(maxVal + 0.5f)) + 1;
+            Debug.Assert(min <= max);
 
+            int numBits = MathUtils.BitsRequired(min, max, precision);
             return Read(numBits) * precision + min;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte ReadSByte(sbyte min, sbyte max)
         {
@@ -125,11 +134,10 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long ReadLong(long min, long max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
+            Debug.Assert(min <= max);
 
             return (long)Read(MathUtils.BitsRequired(min, max)) + min;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(byte min, byte max)
         {
@@ -148,26 +156,21 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ReadULong(ulong min, ulong max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
+            Debug.Assert(min <= max);
             MathUtils.BitsRequired(min, max);
 
             return Read(MathUtils.BitsRequired(min, max)) + min;
         }
 
-        /// <summary>
-        /// Peeks a half-precision floating point.
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float PeekHalf()
         {
             return HalfPrecision.Decompress((ushort)Peek(16));
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float PeekFloat(float min, float max, int bits)
         {
-            Debug.Assert(bits > 0, "Minimum bit size is 1");
-            Debug.Assert(bits < 33, "Maximum bit size is 32");
+            Debug.Assert(min <= max);
 
             var maxvalue = (1 << bits) - 1;
             float range = max - min;
@@ -178,13 +181,11 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float PeekFloat(float min, float max, float precision)
         {
-            float inv = 1.0f / precision;
-            float maxVal = (max - min) * inv;
-            int numBits = MathUtils.Log2_32((uint)(maxVal + 0.5f)) + 1;
+            Debug.Assert(min <= max);
 
+            int numBits = MathUtils.BitsRequired(min, max, precision);
             return Peek(numBits) * precision + min;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte PeekSByte(sbyte min, sbyte max)
         {
@@ -203,11 +204,10 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long PeekLong(long min, long max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
+            Debug.Assert(min <= max);
 
             return (long)Peek(MathUtils.BitsRequired(min, max)) + min;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte PeekByte(byte min, byte max)
         {
@@ -226,38 +226,33 @@ namespace BitSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong PeekULong(ulong min, ulong max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
+            Debug.Assert(min <= max);
             MathUtils.BitsRequired(min, max);
 
             return Peek(MathUtils.BitsRequired(min, max)) + min;
         }
 
-        /// <summary>
-        /// Writes a half-precision floating point.
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteHalf(float value)
+        public BitStreamer WriteHalf(float value)
         {
             Write(HalfPrecision.Compress(value), 16);
             return this;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteFloat(float value, float min, float max, float precision)
+        public BitStreamer WriteFloat(float value, float min, float max, float precision)
         {
-            float inv = 1.0f / precision;
-            float maxVal = (max - min) * inv;
-            int bits = MathUtils.Log2_32((uint)(maxVal + 0.5f)) + 1;
+            Debug.Assert(min <= max);
+
+            int bits = MathUtils.BitsRequired(min, max, precision, out float inv);
             float adjusted = (value - min) * inv;
 
             Write((uint)(adjusted + 0.5f), bits);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteFloat(float value, float min, float max, int bits)
+        public BitStreamer WriteFloat(float value, float min, float max, int bits)
         {
-            Debug.Assert(bits > 0, "Minimum bit size is 1");
-            Debug.Assert(bits < 33, "Maximum bit size is 32");
+            Debug.Assert(min <= max);
 
             var maxvalue = (1 << bits) - 1;
 
@@ -270,60 +265,58 @@ namespace BitSerializer
             Write((uint)(adjusted + 0.5f), bits);
             return this;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteSByte(sbyte value, sbyte min, sbyte max)
+        public BitStreamer WriteSByte(sbyte value, sbyte min, sbyte max)
         {
             WriteLong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteShort(short value, int min, int max)
+        public BitStreamer WriteShort(short value, int min, int max)
         {
             WriteLong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteInt32(int value, int min, int max)
+        public BitStreamer WriteInt32(int value, int min, int max)
         {
             WriteLong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteLong(long value, long min, long max)
+        public BitStreamer WriteLong(long value, long min, long max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
-            Debug.Assert(value >= min, "Value must be at least Min");
-            Debug.Assert(value <= max, "Value must be smaller than or equal to Max");
+            Debug.Assert(min <= max);
+            Debug.Assert(value >= min);
+            Debug.Assert(value <= max);
 
             Write((ulong)(value - min), MathUtils.BitsRequired(min, max));
             return this;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteByte(byte value, byte min, byte max)
+        public BitStreamer WriteByte(byte value, byte min, byte max)
         {
             WriteULong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteUShort(ushort value, ushort min, ushort max)
+        public BitStreamer WriteUShort(ushort value, ushort min, ushort max)
         {
             WriteULong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteUInt32(uint value, uint min, uint max)
+        public BitStreamer WriteUInt32(uint value, uint min, uint max)
         {
             WriteULong(value, min, max);
             return this;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteULong(ulong value, ulong min, ulong max)
+        public BitStreamer WriteULong(ulong value, ulong min, ulong max)
         {
-            Debug.Assert(min < max, "Max must be greater than Min");
-            Debug.Assert(value >= min, "Value must be at least Min");
-            Debug.Assert(value <= max, "Value must be smaller than or equal to Max");
+            Debug.Assert(min <= max);
+            Debug.Assert(value >= min);
+            Debug.Assert(value <= max);
 
             Write(value - min, MathUtils.BitsRequired(min, max));
             return this;

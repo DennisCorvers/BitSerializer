@@ -11,7 +11,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void CTorTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             Assert.AreEqual(0, bs.BitLength);
             Assert.AreEqual(0, bs.BitOffset);
             Assert.AreEqual(false, bs.IsWriting);
@@ -23,7 +23,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void SizeTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(60);
 
             // Rounded to next multiple of 8 = 64;
@@ -40,7 +40,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWithoutBufferTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             Assert.Throws<InvalidOperationException>(() =>
             {
                 bs.ResetRead();
@@ -50,7 +50,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetReadTest1()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetRead(new byte[10]);
 
             Assert.AreEqual(16, bs.ByteLength);
@@ -63,7 +63,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetReadTest2()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetRead(new byte[22], 2, 20);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => bs.ResetRead(new byte[22], 2, 21));
@@ -77,7 +77,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetReadTest3()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             Assert.Throws<ArgumentNullException>(() => bs.ResetRead((IntPtr)null, 10));
 
             IntPtr ptr = Marshal.AllocHGlobal(30);
@@ -91,10 +91,10 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteTest1()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite();
 
-            Assert.AreEqual(BitStream.DefaultSize, bs.ByteLength);
+            Assert.AreEqual(BitStreamer.DefaultSize, bs.ByteLength);
             IntPtr ptr = bs.Buffer;
             bs.ResetWrite();
 
@@ -105,7 +105,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteTest2()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(10);
             IntPtr ptr = bs.Buffer;
             Assert.AreEqual(16, bs.ByteLength);
@@ -124,7 +124,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteInvalid()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
 
             IntPtr buff = Memory.Alloc(16);
             *(byte*)buff = 212;
@@ -141,7 +141,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteCopyBufferNull()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
 
             IntPtr buff = Memory.Alloc(16);
             *(byte*)buff = 212;
@@ -160,7 +160,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteCopyBufferTooSmall()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
 
             IntPtr buff = Memory.Alloc(16);
             *(byte*)buff = 212;
@@ -183,7 +183,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteCopy()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
 
             IntPtr buff = Memory.Alloc(16);
             *(byte*)buff = 212;
@@ -206,7 +206,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ResetWriteOwnsBufferTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(16);
             bs.WriteByte(1);
             bs.WriteByte(2);
@@ -234,7 +234,7 @@ namespace BitSerializer.Bitstream
             var arr = new byte[16];
             arr[5] = 123;
 
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetRead(arr, 5, 10);
 
             Assert.AreEqual(16, bs.ByteLength);
@@ -246,7 +246,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void DisposeWriterTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.Dispose();
 
             bs.ResetWrite(16);
@@ -270,7 +270,7 @@ namespace BitSerializer.Bitstream
             IntPtr buf = Marshal.AllocHGlobal(8);
             *(ulong*)buf = value;
 
-            BitStream reader = new BitStream();
+            BitStreamer reader = new BitStreamer();
             reader.ResetRead(buf, 8, false);
 
             Assert.AreEqual(64, reader.BitLength);
@@ -285,7 +285,7 @@ namespace BitSerializer.Bitstream
             ulong value = 666;
             IntPtr buf = Marshal.AllocHGlobal(8);
 
-            BitStream reader = new BitStream();
+            BitStreamer reader = new BitStreamer();
             reader.ResetWrite(buf, 8, false);
             reader.WriteULong(value, 64);
 
@@ -300,7 +300,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public unsafe void SizePrefixTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(64);
 
             bs.ReserveSizePrefix();
@@ -322,7 +322,7 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(bytesUsed, bs.PrefixSize());
             Assert.AreEqual(bits, bs.BitOffset);
 
-            var newbs = new BitStream();
+            var newbs = new BitStreamer();
             newbs.ResetRead(bs.Buffer, bs.ByteLength, false);
 
             // Read the length of the buffer.
@@ -338,7 +338,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ExpandFailTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             IntPtr ptr = Marshal.AllocHGlobal(9);
 
             bs.ResetWrite(ptr, 9, false);
@@ -357,7 +357,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ExpandTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
 
             bs.ResetWrite(7);
             Assert.AreEqual(8, bs.ByteLength);
@@ -371,12 +371,12 @@ namespace BitSerializer.Bitstream
         [Test]
         public void ZeroLargeTest()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(8);
 
             Assert.AreEqual(8, bs.ByteLength);
 
-            bs.Zeroes(20 << 3);
+            bs.Skip(20 << 3);
 
             Assert.AreEqual(24, bs.ByteLength);
         }
@@ -384,7 +384,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void CopyWithoutResize()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(64);
 
             Assert.AreEqual(64, bs.ByteLength);
@@ -399,7 +399,7 @@ namespace BitSerializer.Bitstream
         [Test]
         public void CopyWithResize()
         {
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(8);
 
             Assert.AreEqual(8, bs.ByteLength);

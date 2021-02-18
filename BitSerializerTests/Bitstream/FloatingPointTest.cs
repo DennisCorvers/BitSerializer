@@ -9,7 +9,7 @@ namespace BitSerializer.Bitstream
     [TestFixture]
     public class FloatingPointTest
     {
-        private BitStream m_stream = new BitStream();
+        private BitStreamer m_stream = new BitStreamer();
 
         [SetUp]
         public void Init()

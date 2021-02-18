@@ -24,4 +24,10 @@
     <ProjectReference Include="..\BitSerializer\BitSerializer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

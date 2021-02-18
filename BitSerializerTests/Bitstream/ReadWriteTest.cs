@@ -7,7 +7,7 @@ namespace BitSerializer.Bitstream
     [TestFixture]
     internal class ReadWriteTest
     {
-        private BitStream m_stream = new BitStream();
+        private BitStreamer m_stream = new BitStreamer();
 
         [SetUp]
         public void Init()
@@ -51,7 +51,7 @@ namespace BitSerializer.Bitstream
             const float fVal = float.MinValue / 5;
             const short sVal = -12345;
             const int offset = 113;
-            m_stream = new BitStream();
+            m_stream = new BitStreamer();
             m_stream.ResetWrite(64);
             m_stream.WriteBool(bVal);
             m_stream.WriteDouble(dVal);
@@ -119,12 +119,12 @@ namespace BitSerializer.Bitstream
         [TestCase(12514)]
         public void SkipBitsTest(int value)
         {
-            m_stream.Zeroes(5);
+            m_stream.Skip(5);
             m_stream.WriteInt32(value);
             Assert.AreEqual(37, m_stream.BitOffset);
 
             m_stream.ResetRead();
-            m_stream.Zeroes(5);
+            m_stream.Skip(5);
             Assert.AreEqual(value, m_stream.ReadInt32());
             Assert.AreEqual(37, m_stream.BitOffset);
         }
@@ -132,11 +132,11 @@ namespace BitSerializer.Bitstream
         [TestCase]
         public void WriteZeroesTest()
         {
-            m_stream.Zeroes(64);
+            m_stream.Skip(64);
             Assert.AreEqual(64, m_stream.BitOffset);
 
             m_stream.ResetRead();
-            m_stream.Zeroes(65);
+            m_stream.Skip(65);
             Assert.AreEqual(65, m_stream.BitOffset);
         }
 
@@ -145,10 +145,10 @@ namespace BitSerializer.Bitstream
         {
             // This call is ignored.
             m_stream.ResetWrite();
-            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Zeroes(-1); });
+            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Skip(-1); });
 
             m_stream.ResetRead();
-            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Zeroes(-1); });
+            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Skip(-1); });
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace BitSerializer.Bitstream
         public void ReadWriteIntTest()
         {
             int val = 123456789;
-            BitStream bs = new BitStream();
+            BitStreamer bs = new BitStreamer();
             bs.ResetWrite(64);
 
             bs.WriteInt32(val);

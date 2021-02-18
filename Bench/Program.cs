@@ -1,4 +1,5 @@
 ﻿using System;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 namespace Bench
@@ -7,7 +8,8 @@ namespace Bench
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<SerializeBench>();
+            var config = DefaultConfig.Instance.With(ConfigOptions.DisableOptimizationsValidator);
+            BenchmarkRunner.Run<SerializeBench>(config);
             Console.ReadLine();
         }
     }

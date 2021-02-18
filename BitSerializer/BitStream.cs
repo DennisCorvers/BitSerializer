@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) 2019 Dennis Corvers
+ *  Copyright (c) 2021 Dennis Corvers
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ using System.Runtime.CompilerServices;
 
 namespace BitSerializer
 {
-    public unsafe partial class BitStream : IDisposable
+    public unsafe partial class BitStreamer : IDisposable
     {
         public const int DefaultSize = 1200;
         public const int MinSize = 16;
@@ -40,37 +40,37 @@ namespace BitSerializer
         private bool m_ownsBuffer;
 #pragma warning restore
 
-        public BitStream()
+        public BitStreamer()
         { }
 
-        ~BitStream()
+        ~BitStreamer()
         {
             if (m_ownsBuffer)
                 DeallocateInnerBuffer();
         }
 
         /// <summary>
-        /// The current <see cref="BitStream"/> offset in bits.
+        /// The current <see cref="BitStreamer"/> offset in bits.
         /// </summary>
         public int BitOffset
             => m_offset;
         /// <summary>
-        /// The current <see cref="BitStream"/> offset in bytes.
+        /// The current <see cref="BitStreamer"/> offset in bytes.
         /// </summary>
         public double ByteOffset
             => (double)BitOffset / 8;
         /// <summary>
-        /// The amount of bytes occupied by the <see cref="BitStream"/>.
+        /// The amount of bytes occupied by the <see cref="BitStreamer"/>.
         /// </summary>
         public int BytesUsed
             => (m_offset + 7) >> 3;
         /// <summary>
-        /// The total <see cref="BitStream"/> length in bits.
+        /// The total <see cref="BitStreamer"/> length in bits.
         /// </summary>
         public int BitLength
             => m_bitLength;
         /// <summary>
-        /// The total <see cref="BitStream"/> length in bytes.
+        /// The total <see cref="BitStreamer"/> length in bytes.
         /// </summary>
         public int ByteLength
             => m_bitLength >> 3;
@@ -81,49 +81,25 @@ namespace BitSerializer
         public SerializationMode Mode
             => m_mode;
         /// <summary>
-        /// Determines if the <see cref="BitStream"/> is writing.
+        /// Determines if the <see cref="BitStreamer"/> is writing.
         /// </summary>
         public bool IsWriting
             => m_mode == SerializationMode.Writing;
         /// <summary>
-        /// Determines if the <see cref="BitStream"/> is reading.
+        /// Determines if the <see cref="BitStreamer"/> is reading.
         /// </summary>
         public bool IsReading
             => m_mode == SerializationMode.Reading;
         /// <summary>
-        /// The inner buffer used by the <see cref="BitStream"/>.
+        /// The inner buffer used by the <see cref="BitStreamer"/>.
         /// </summary>
         public IntPtr Buffer
             => (IntPtr)m_buffer;
         /// <summary>
-        /// TRUE if this <see cref="BitStream"/> has allocated its own buffer.
+        /// TRUE if this <see cref="BitStreamer"/> has allocated its own buffer.
         /// </summary>
         public bool OwnsBuffer
             => m_ownsBuffer;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureReadSize(int bitCount)
-        {
-            Debug.Assert(bitCount > 0, "Amount of bits must be larger than zero.");
-            Debug.Assert(m_mode == SerializationMode.Reading);
-
-            // Casting to uint also checks negative bitCount values.
-            if (m_offset + (uint)bitCount > m_bitLength)
-                throw new InvalidOperationException("Inner buffer is exceeded");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureWriteBits(int bitCount)
-        {
-            Debug.Assert(bitCount > 0, "Amount of bits must be larger than zero.");
-            Debug.Assert(m_mode == SerializationMode.Writing);
-
-            // Casting to uint checks negative numbers.
-            long newSize = m_offset + (uint)bitCount;
-
-            if (newSize > m_bitLength)
-                Resize((int)newSize);
-        }
 
         private void Resize(int bufferBitSize)
         {
@@ -138,7 +114,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets <see cref="BitStream"/> for reading (reads what was written so far).
+        /// Resets <see cref="BitStreamer"/> for reading (reads what was written so far).
         /// </summary>
         public void ResetRead()
         {
@@ -150,7 +126,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets <see cref="BitStream"/> for reading and copies data.
+        /// Resets <see cref="BitStreamer"/> for reading and copies data.
         /// Allocates a new inner buffer!
         /// </summary>
         public void ResetRead(byte[] data)
@@ -210,7 +186,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets the <see cref="BitStream"/> for writing,
+        /// Resets the <see cref="BitStreamer"/> for writing,
         /// Allocates a new buffer is none is yet allocated.
         /// </summary>
         public void ResetWrite()
@@ -231,7 +207,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets the <see cref="BitStream"/> for writing.
+        /// Resets the <see cref="BitStreamer"/> for writing.
         /// Allocates a new buffer!
         /// </summary>
         /// <param name="length">The length of the buffer to allocate in bytes.</param>
@@ -246,7 +222,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets the <see cref="BitStream"/> for writing using an existing buffer.
+        /// Resets the <see cref="BitStreamer"/> for writing using an existing buffer.
         /// </summary>
         /// <param name="buffer">The buffer to write to</param>
         /// <param name="length">The length of the supplied buffer</param>
@@ -256,11 +232,11 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Resets the <see cref="BitStream"/> for writing using an existing buffer.
+        /// Resets the <see cref="BitStreamer"/> for writing using an existing buffer.
         /// </summary>
         /// <param name="buffer">The buffer to write to</param>
         /// <param name="length">The length of the supplied buffer</param>
-        /// <param name="copy">Appends the supplied buffer at the front of the<see cref="BitStream"/>.</param>
+        /// <param name="copy">Appends the supplied buffer at the front of the<see cref="BitStreamer"/>.</param>
         public void ResetWrite(IntPtr buffer, int length, bool copy)
         {
             var ptr = (void*)buffer;
@@ -331,15 +307,15 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reserves 4 bytes at the front of the <see cref="BitStream"/> so that the size can be written later.
+        /// Reserves 4 bytes at the front of the <see cref="BitStreamer"/> so that the size can be written later.
         /// </summary>
         public void ReserveSizePrefix()
         {
-            Zeroes(32);
+            Skip(32);
         }
 
         /// <summary>
-        /// Prefixes the <see cref="BitStream"/> with the total size of this <see cref="BitStream"/>.
+        /// Prefixes the <see cref="BitStreamer"/> with the total size of this <see cref="BitStreamer"/>.
         /// Overwrites any data that might be in the first 32 bits.
         /// </summary>
         public int PrefixSize()
@@ -375,124 +351,18 @@ namespace BitSerializer
             m_ownsBuffer = true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref double value)
-        {
-            if (m_mode == SerializationMode.Writing) WriteDouble(value);
-            else value = ReadDouble();
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref float value, bool halfPrecision = false)
-        {
-            if (!halfPrecision)
-            {
-                if (m_mode == SerializationMode.Writing) WriteFloat(value);
-                else value = ReadFloat();
-            }
-            else
-            {
-                if (m_mode == SerializationMode.Writing) WriteHalf(value);
-                else value = ReadHalf();
-            }
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref decimal value)
-        {
-            if (m_mode == SerializationMode.Writing) WriteDecimal(value);
-            else value = ReadDecimal();
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref bool value)
-        {
-            if (m_mode == SerializationMode.Writing) WriteBool(value);
-            else value = ReadBool();
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref sbyte value, int bitCount = 8)
-        {
-            if (m_mode == SerializationMode.Writing) WriteSByte(value, bitCount);
-            else value = ReadSByte(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref byte value, int bitCount = 8)
-        {
-            if (m_mode == SerializationMode.Writing) WriteByte(value, bitCount);
-            else value = ReadByte(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref short value, int bitCount = 16)
-        {
-            if (m_mode == SerializationMode.Writing) WriteShort(value, bitCount);
-            else value = ReadShort(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref ushort value, int bitCount = 16)
-        {
-            if (m_mode == SerializationMode.Writing) WriteUShort(value, bitCount);
-            else value = ReadUShort(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref int value, int bitCount = 32)
-        {
-            if (m_mode == SerializationMode.Writing) WriteInt32(value, bitCount);
-            else value = ReadInt32(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref uint value, int bitCount = 32)
-        {
-            if (m_mode == SerializationMode.Writing) WriteUInt32(value, bitCount);
-            else value = ReadUInt32(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref long value, int bitCount = 64)
-        {
-            if (m_mode == SerializationMode.Writing) WriteLong(value, bitCount);
-            else value = ReadLong(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref ulong value, int bitCount = 64)
-        {
-            if (m_mode == SerializationMode.Writing) WriteULong(value, bitCount);
-            else value = ReadULong(bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream Serialize(ref char value, int bitCount = 16)
-        {
-            if (m_mode == SerializationMode.Writing) WriteChar(value, bitCount);
-            else value = ReadChar(bitCount);
-            return this;
-        }
-
-        public void Dispose()
-        {
-            DeallocateInnerBuffer();
-        }
-
-
         /// <summary>
         /// Skips a certain number of bits. Writes 0 bits when in write-mode.
         /// </summary>
         /// <param name="bitCount">Amount of bits to skip</param>
-        public BitStream Zeroes(int bitCount)
+        public BitStreamer Skip(int bitCount)
         {
             if (bitCount < 0)
                 throw new ArgumentOutOfRangeException(nameof(bitCount));
 
             if (m_mode == SerializationMode.Writing)
             {
-                EnsureWriteBits(bitCount);
+                EnsureWriteSize(bitCount);
 
                 // Write the long values first.
                 while (bitCount > 64)
@@ -531,19 +401,58 @@ namespace BitSerializer
             m_ownsBuffer = false;
         }
 
-        #region Reading
         private ulong Read(int bits)
+        {
+            EnsureReadSize(bits);
+
+            ulong value = InternalPeek(bits);
+            m_offset += bits;
+            return value;
+        }
+
+        /// <summary>
+        /// Reads a value without ensuring the buffer size.
+        /// </summary>
+        private ulong ReadUnchecked(int bits)
         {
             ulong value = InternalPeek(bits);
             m_offset += bits;
             return value;
         }
 
+        private ulong Peek(int bits)
+        {
+            EnsureReadSize(bits);
+
+            return InternalPeek(bits);
+        }
+
+        private void Write(ulong value, int bits)
+        {
+            EnsureWriteSize(bits);
+
+            InternalWrite(value, bits);
+            m_offset += bits;
+        }
+
+        /// <summary>
+        /// Writes a value without ensuring the buffer size.
+        /// </summary>
+        private void WriteUnchecked(ulong value, int bits)
+        {
+            InternalWrite(value, bits);
+            m_offset += bits;
+        }
+
+        /// <summary>
+        /// Reads a value without increasing the offset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ulong InternalPeek(int bits)
         {
             Debug.Assert(m_mode == SerializationMode.Reading, "Buffer is not in read mode. Call ResetRead first.");
-            EnsureReadSize(bits);
+            Debug.Assert(bits > 0);
+            Debug.Assert(bits < 65);
 
             int longOffsetStart = m_offset >> 6;
             int longOffsetEnd = (m_offset + bits - 1) >> 6;
@@ -561,172 +470,17 @@ namespace BitSerializer
             return value & basemask;
         }
 
+        /// <summary>
+        /// Writes a value without increasing the offset.
+        /// </summary>
+        /// <param name="bits"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double ReadDouble()
-        {
-            ulong val = Read(64);
-            return *(double*)&val;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadFloat()
-        {
-            uint val = unchecked((uint)Read(32));
-            return *(float*)&val;
-
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal ReadDecimal()
-        {
-            decimal result;
-            ((ulong*)&result)[0] = Read(sizeof(ulong) * 8);
-            ((ulong*)&result)[1] = Read(sizeof(ulong) * 8);
-            return result;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadBool()
-        {
-            return Read(1) == 1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte ReadSByte(int bitCount = 8)
-        {
-            return (sbyte)ZigZag.Zag(ReadUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short ReadShort(int bitCount = 16)
-        {
-            return (short)ZigZag.Zag(ReadUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadInt32(int bitCount = 32)
-        {
-            return ZigZag.Zag(ReadUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadLong(int bitCount = 64)
-        {
-            return ZigZag.Zag(ReadULong(bitCount));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(int bitCount = 8)
-        {
-            return unchecked((byte)Read(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(int bitCount = 16)
-        {
-            return unchecked((ushort)Read(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadUInt32(int bitCount = 32)
-        {
-            return unchecked((uint)Read(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadULong(int bitCount = 64)
-        {
-            return unchecked(Read(bitCount));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public char ReadChar(int bitCount = 16)
-        {
-            return unchecked((char)Read(bitCount));
-        }
-
-
-        #endregion
-
-        #region Peek
-
-        private ulong Peek(int bits)
-        {
-            return InternalPeek(bits);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double PeekDouble()
-        {
-            ulong val = Peek(64);
-            return *(double*)&val;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float PeekFloat()
-        {
-            ulong val = Peek(32);
-            return *(float*)&val;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal PeekDecimal()
-        {
-            decimal result;
-            ((ulong*)&result)[0] = Peek(sizeof(ulong) * 8);
-            ((ulong*)&result)[1] = Peek(sizeof(ulong) * 8);
-            return result;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool PeekBool()
-        {
-            return Peek(1) == 1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte PeekSByte(int bitCount = 8)
-        {
-            return (sbyte)ZigZag.Zag(PeekUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short PeekShort(int bitCount = 16)
-        {
-            return (short)ZigZag.Zag(PeekUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int PeekInt32(int bitCount = 32)
-        {
-            return ZigZag.Zag(PeekUInt32(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long PeekLong(int bitCount = 64)
-        {
-            return ZigZag.Zag(PeekULong(bitCount));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte PeekByte(int bitCount = 8)
-        {
-            return unchecked((byte)Peek(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort PeekUShort(int bitCount = 16)
-        {
-            return unchecked((ushort)Peek(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint PeekUInt32(int bitCount = 32)
-        {
-            return unchecked((uint)Peek(bitCount));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong PeekULong(int bitCount = 64)
-        {
-            return unchecked(Peek(bitCount));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public char PeekChar(int bitCount = 16)
-        {
-            return unchecked((char)Peek(bitCount));
-        }
-
-        #endregion
-
-        #region Writing
-        private void Write(ulong value, int bits)
+        private void InternalWrite(ulong value, int bits)
         {
             Debug.Assert(m_mode == SerializationMode.Writing, "Buffer is not in write mode. Call ResetWrite first.");
-            EnsureWriteBits(bits);
+            Debug.Assert(bits > 0);
+            Debug.Assert(bits < 65);
 
             int longOffsetStart = m_offset >> 6;
             int longOffsetEnd = (m_offset + bits - 1) >> 6;
@@ -739,93 +493,36 @@ namespace BitSerializer
 
             if (longOffsetEnd != longOffsetStart)
                 m_buffer[longOffsetEnd] = value >> (64 - placeOffset);
-
-            m_offset += bits;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteDouble(double value)
+        private void EnsureReadSize(int bitCount)
         {
-            Write(*(ulong*)&value, sizeof(double) * 8);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteFloat(float value)
-        {
-            Write(*(uint*)&value, sizeof(float) * 8);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteDecimal(decimal value)
-        {
-            Write(((ulong*)&value)[0], sizeof(ulong) * 8);
-            Write(((ulong*)&value)[1], sizeof(ulong) * 8);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteBool(bool value)
-        {
-            Write(value ? (ulong)1 : 0, 1);
-            return this;
+            Debug.Assert(bitCount > 0, "Amount of bits must be larger than zero.");
+            Debug.Assert(m_mode == SerializationMode.Reading);
+
+            // Casting to uint also checks negative bitCount values.
+            if (m_offset + (uint)bitCount > m_bitLength)
+                throw new InvalidOperationException("Inner buffer is exceeded");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteSByte(sbyte value, int bitCount = 8)
+        private void EnsureWriteSize(int bitCount)
         {
-            Write(ZigZag.Zig(value), bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteShort(short value, int bitCount = 16)
-        {
-            Write(ZigZag.Zig(value), bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteInt32(int value, int bitCount = 32)
-        {
-            Write(ZigZag.Zig(value), bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteLong(long value, int bitCount = 64)
-        {
-            Write(ZigZag.Zig(value), bitCount);
-            return this;
+            Debug.Assert(bitCount > 0, "Amount of bits must be larger than zero.");
+            Debug.Assert(m_mode == SerializationMode.Writing);
+
+            // Casting to uint checks negative numbers.
+            long newSize = m_offset + (uint)bitCount;
+
+            if (newSize > m_bitLength)
+                Resize((int)newSize);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteByte(byte value, int bitCount = 8)
-        {
-            Write(value, bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteUShort(ushort value, int bitCount = 16)
-        {
-            Write(value, bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteUInt32(uint value, int bitCount = 32)
-        {
-            Write(value, bitCount);
-            return this;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteULong(ulong value, int bitCount = 64)
-        {
-            Write(value, bitCount);
-            return this;
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitStream WriteChar(char value, int bitCount = 16)
+        public void Dispose()
         {
-            Write(value, bitCount);
-            return this;
+            DeallocateInnerBuffer();
         }
-
-        #endregion
     }
 }

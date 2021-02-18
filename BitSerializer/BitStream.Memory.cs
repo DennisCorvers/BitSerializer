@@ -4,21 +4,21 @@ using System.Diagnostics;
 
 namespace BitSerializer
 {
-    public unsafe partial class BitStream
+    public unsafe partial class BitStreamer
     {
         /// <summary>
-        /// Writes raw data to the <see cref="BitStream"/>.
+        /// Writes raw data to the <see cref="BitStreamer"/>.
         /// </summary>
-        public BitStream WriteMemory(IntPtr ptr, int byteSize)
+        public BitStreamer WriteMemory(IntPtr ptr, int byteSize)
         {
             WriteMemory((void*)ptr, byteSize);
             return this;
         }
 
         /// <summary>
-        /// Writes raw data to the <see cref="BitStream"/>.
+        /// Writes raw data to the <see cref="BitStreamer"/>.
         /// </summary>
-        public BitStream WriteMemory(void* ptr, int byteSize)
+        public BitStreamer WriteMemory(void* ptr, int byteSize)
         {
             if (byteSize < 0)
                 throw new ArgumentOutOfRangeException(nameof(byteSize));
@@ -43,7 +43,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reads raw data from the <see cref="BitStream"/>.
+        /// Reads raw data from the <see cref="BitStreamer"/>.
         /// </summary>
         public void ReadMemory(IntPtr ptr, int byteSize)
         {
@@ -51,7 +51,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reads raw data from the <see cref="BitStream"/>.
+        /// Reads raw data from the <see cref="BitStreamer"/>.
         /// </summary>
         public void ReadMemory(void* ptr, int byteSize)
         {
@@ -76,9 +76,9 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Writes bytes to the <see cref="BitStream"/>.
+        /// Writes bytes to the <see cref="BitStreamer"/>.
         /// </summary>
-        public BitStream WriteBytes(byte[] bytes, int offset, int count, bool includeSize = false)
+        public BitStreamer WriteBytes(byte[] bytes, int offset, int count, bool includeSize = false)
         {
             if (bytes == null)
                 throw new ArgumentNullException(nameof(bytes));
@@ -98,7 +98,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reads bytes from the <see cref="BitStream"/>.
+        /// Reads bytes from the <see cref="BitStreamer"/>.
         /// </summary>
         public void ReadBytes(byte[] bytes, int offset, int count)
         {

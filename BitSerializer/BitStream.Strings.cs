@@ -4,62 +4,12 @@ using System.Text;
 
 namespace BitSerializer
 {
-    public unsafe partial class BitStream
+    public unsafe partial class BitStreamer
     {
         public const byte StringLengthMax = byte.MaxValue;
 
         /// <summary>
-        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
-        /// </summary>
-        public BitStream WriteString(string str, Encoding encoding)
-        {
-            if (str == null)
-                throw new ArgumentNullException(nameof(str));
-
-            fixed (char* ptr = str)
-            {
-                WriteString(ptr, str.Length, encoding);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
-        /// </summary>
-        public BitStream WriteString(char[] str, Encoding encoding)
-        {
-            if (str == null)
-                throw new ArgumentNullException(nameof(str));
-
-            fixed (char* ptr = str)
-            {
-                WriteString(ptr, str.Length, encoding);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Writes a string to the <see cref="BitStream"/>. Includes the bytelength as an uint16.
-        /// </summary>
-        public BitStream WriteString(char* ptr, int charCount, Encoding encoding)
-        {
-            if (charCount > StringLengthMax)
-                throw new ArgumentOutOfRangeException("String length exceeds maximum allowed size of " + StringLengthMax);
-
-            int byteLength = encoding.GetByteCount(ptr, charCount);
-            WriteUShort((ushort)byteLength);
-
-            byte* bytes = stackalloc byte[byteLength];
-            encoding.GetBytes(ptr, charCount, bytes, byteLength);
-            WriteMemory(bytes, byteLength);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Reads a string from the <see cref="BitStream"/>.
+        /// Reads a string from the <see cref="BitStreamer"/>.
         /// </summary>
         public string ReadString(Encoding encoding)
         {
@@ -74,7 +24,7 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reads a string from the <see cref="BitStream"/>.
+        /// Reads a string from the <see cref="BitStreamer"/>.
         /// </summary>
         public int ReadString(char[] destination, int offset, Encoding encoding)
         {
@@ -89,11 +39,62 @@ namespace BitSerializer
         }
 
         /// <summary>
-        /// Reads a string from the <see cref="BitStream"/>.
+        /// Reads a string from the <see cref="BitStreamer"/>.
         /// </summary>
         public int ReadString(char* ptr, int charLength, Encoding encoding)
         {
             return ReadStringInternal(ptr, charLength, encoding);
+        }
+
+
+        /// <summary>
+        /// Writes a string to the <see cref="BitStreamer"/>. Includes the bytelength as an uint16.
+        /// </summary>
+        public BitStreamer WriteString(string str, Encoding encoding)
+        {
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+
+            fixed (char* ptr = str)
+            {
+                WriteString(ptr, str.Length, encoding);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes a string to the <see cref="BitStreamer"/>. Includes the bytelength as an uint16.
+        /// </summary>
+        public BitStreamer WriteString(char[] str, Encoding encoding)
+        {
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+
+            fixed (char* ptr = str)
+            {
+                WriteString(ptr, str.Length, encoding);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes a string to the <see cref="BitStreamer"/>. Includes the bytelength as an uint16.
+        /// </summary>
+        public BitStreamer WriteString(char* ptr, int charCount, Encoding encoding)
+        {
+            if (charCount > StringLengthMax)
+                throw new ArgumentOutOfRangeException("String length exceeds maximum allowed size of " + StringLengthMax);
+
+            int byteLength = encoding.GetByteCount(ptr, charCount);
+            WriteUShort((ushort)byteLength);
+
+            byte* bytes = stackalloc byte[byteLength];
+            encoding.GetBytes(ptr, charCount, bytes, byteLength);
+            WriteMemory(bytes, byteLength);
+
+            return this;
         }
 
         private int ReadStringInternal(char* str, int charLength, Encoding encoding)

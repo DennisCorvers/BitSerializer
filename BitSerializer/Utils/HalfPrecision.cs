@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-/*
+﻿/*
  *  Copyright (c) 2018 Stanislav Denisov
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,81 +19,64 @@ using System.Runtime.InteropServices;
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+using System.Runtime.CompilerServices;
 
 namespace BitSerializer.Utils
 {
-    public static class HalfPrecision
+    public unsafe static class HalfPrecision
     {
-        [StructLayout(LayoutKind.Explicit)]
-        private struct Values
-        {
-            [FieldOffset(0)]
-            public float f;
-            [FieldOffset(0)]
-            public int i;
-            [FieldOffset(0)]
-            public uint u;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort Compress(float value)
         {
-            var values = new Values
-            {
-                f = value
-            };
-
-            return Compress(values.i);
+            return Compress(*(int*)&value);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort Compress(int value)
+        private static ushort Compress(int value)
         {
-            int s = (value >> 16) & 0x00008000;
-            int e = ((value >> 23) & 0X000000FF) - (127 - 15);
-            int m = value & 0X007FFFFF;
+            int signBit = (value >> 16) & 0x00008000;
+            int exponent = ((value >> 23) & 0X000000FF) - (127 - 15);
+            int mantissa = value & 0X007FFFFF;
 
-            if (e <= 0)
+            if (exponent <= 0)
             {
-                if (e < -10)
-                    return (ushort)s;
+                if (exponent < -10)
+                    return (ushort)signBit;
 
-                m = m | 0x00800000;
+                mantissa = mantissa | 0x00800000;
 
-                int t = 14 - e;
+                int t = 14 - exponent;
                 int a = (1 << (t - 1)) - 1;
-                int b = (m >> t) & 1;
+                int b = (mantissa >> t) & 1;
 
-                m = (m + a + b) >> t;
+                mantissa = (mantissa + a + b) >> t;
 
-                return (ushort)(s | m);
+                return (ushort)(signBit | mantissa);
             }
 
-            if (e == 0XFF - (127 - 15))
+            if (exponent == 0XFF - (127 - 15))
             {
-                if (m == 0)
-                    return (ushort)(s | 0X7C00);
+                if (mantissa == 0)
+                    return (ushort)(signBit | 0X7C00);
 
-                m >>= 13;
+                mantissa >>= 13;
 
-                return (ushort)(s | 0X7C00 | m | ((m == 0) ? 1 : 0));
+                return (ushort)(signBit | 0X7C00 | mantissa | ((mantissa == 0) ? 1 : 0));
             }
 
-            m = m + 0X00000FFF + ((m >> 13) & 1);
+            mantissa = mantissa + 0X00000FFF + ((mantissa >> 13) & 1);
 
-            if ((m & 0x00800000) != 0)
+            if ((mantissa & 0x00800000) != 0)
             {
-                m = 0;
-                e++;
+                mantissa = 0;
+                exponent++;
             }
 
-            if (e > 30)
-                return (ushort)(s | 0X7C00);
+            if (exponent > 30)
+                return (ushort)(signBit | 0X7C00);
 
-            return (ushort)(s | (e << 10) | (m >> 13));
+            return (ushort)(signBit | (exponent << 10) | (mantissa >> 13));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Decompress(ushort value)
         {
             uint result;
@@ -123,15 +103,12 @@ namespace BitSerializer.Utils
             }
             else
             {
-                result = ((((uint)value & 0x8000) << 16) | ((((((uint)value >> 10) & 0X1F) - 15) + 127) << 23)) | (mantissa << 13);
+                result = (((uint)value & 0x8000) << 16) | (((((uint)value >> 10) & 0X1F) - 15 + 127) << 23) | (mantissa << 13);
             }
 
-            var values = new Values
-            {
-                u = result
-            };
-
-            return values.f;
+            // Create a local copy so we can return the value.
+            float res = *(float*)&result;
+            return res;
         }
     }
 }
