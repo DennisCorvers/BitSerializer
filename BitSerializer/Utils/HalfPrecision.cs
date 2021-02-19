@@ -1,25 +1,4 @@
-﻿/*
- *  Copyright (c) 2018 Stanislav Denisov
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- */
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace BitSerializer.Utils
 {
@@ -28,87 +7,119 @@ namespace BitSerializer.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort Compress(float value)
         {
-            return Compress(*(int*)&value);
+            return F32BitsToF16Bits(*(uint*)&value);
         }
 
-        private static ushort Compress(int value)
-        {
-            int signBit = (value >> 16) & 0x00008000;
-            int exponent = ((value >> 23) & 0X000000FF) - (127 - 15);
-            int mantissa = value & 0X007FFFFF;
-
-            if (exponent <= 0)
-            {
-                if (exponent < -10)
-                    return (ushort)signBit;
-
-                mantissa = mantissa | 0x00800000;
-
-                int t = 14 - exponent;
-                int a = (1 << (t - 1)) - 1;
-                int b = (mantissa >> t) & 1;
-
-                mantissa = (mantissa + a + b) >> t;
-
-                return (ushort)(signBit | mantissa);
-            }
-
-            if (exponent == 0XFF - (127 - 15))
-            {
-                if (mantissa == 0)
-                    return (ushort)(signBit | 0X7C00);
-
-                mantissa >>= 13;
-
-                return (ushort)(signBit | 0X7C00 | mantissa | ((mantissa == 0) ? 1 : 0));
-            }
-
-            mantissa = mantissa + 0X00000FFF + ((mantissa >> 13) & 1);
-
-            if ((mantissa & 0x00800000) != 0)
-            {
-                mantissa = 0;
-                exponent++;
-            }
-
-            if (exponent > 30)
-                return (ushort)(signBit | 0X7C00);
-
-            return (ushort)(signBit | (exponent << 10) | (mantissa >> 13));
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Decompress(ushort value)
         {
-            uint result;
-            uint mantissa = (uint)(value & 1023);
-            uint exponent = 0XFFFFFFF2;
+            var retVal = F16BitsToF32Bits(value);
+            return *(float*)&retVal;
+        }
 
-            if ((value & -33792) == 0)
+        private static ushort F32BitsToF16Bits(uint value)
+        {
+            // Translated from Go to C# by Dennis Corvers (github.com/DennisCorvers).
+            // Translated from Rust to Go by Montgomery Edwards⁴⁴⁸ (github.com/x448).
+            // All 4.294.967.296 conversions with this were confirmed to be correct by x448.
+            // Original Rust implementation is by Kathryn Long (github.com/starkat99) with MIT license.
+
+            uint sign = value & 0x80000000;
+            uint exp = value & 0x7f800000;
+            uint coef = value & 0x007fffff;
+
+            if (exp == 0x7f800000)
             {
-                if (mantissa != 0)
-                {
-                    while ((mantissa & 1024) == 0)
-                    {
-                        exponent--;
-                        mantissa = mantissa << 1;
-                    }
+                // NaN or Infinity
+                uint nanBit = 0;
 
-                    mantissa &= 0XFFFFFBFF;
-                    result = (((uint)value & 0x8000) << 16) | ((exponent + 127) << 23) | (mantissa << 13);
-                }
-                else
-                {
-                    result = (uint)((value & 0x8000) << 16);
-                }
+                if (coef != 0)
+                    nanBit = 0x0200;
+
+                return (ushort)((sign >> 16) | 0x7c00 | nanBit | (coef >> 13));
             }
-            else
+
+            uint halfSign = sign >> 16;
+            int unbiasedExp = (int)(exp >> 23) - 127;
+            int halfExp = unbiasedExp + 15;
+
+
+            if (halfExp >= 0x1f)
             {
-                result = (((uint)value & 0x8000) << 16) | (((((uint)value >> 10) & 0X1F) - 15 + 127) << 23) | (mantissa << 13);
+                return (ushort)(halfSign | 0x7c00);
             }
 
-            // Create a local copy so we can return the value.
-            float res = *(float*)&result;
-            return res;
+            if (halfExp <= 0)
+            {
+                if (14 - halfExp > 24)
+                {
+                    return (ushort)halfSign;
+                }
+
+                uint c = coef | 0x00800000;
+                uint halfCoef = c >> (14 - halfExp);
+                uint roundBit = (uint)1 << (13 - halfExp);
+
+                if ((c & roundBit) != 0 && (c & (3 * roundBit - 1)) != 0)
+                    halfCoef++;
+
+                return (ushort)(halfSign | halfCoef);
+            }
+
+            uint uHalfExp = (uint)halfExp << 10;
+            uint uhalfCoef = coef >> 13;
+            uint uroundBit = 0x00001000;
+
+            if ((coef & uroundBit) != 0 && (coef & (3 * uroundBit - 1)) != 0)
+            {
+                return (ushort)((halfSign | uHalfExp | uhalfCoef) + 1);
+            }
+
+            return (ushort)(halfSign | uHalfExp | uhalfCoef);
+        }
+
+        private static uint F16BitsToF32Bits(ushort value)
+        {
+            // All 65.536 conversions with this were confirmed to be correct
+            // by Montgomery Edwards⁴⁴⁸ (github.com/x448).
+
+            uint sign = (uint)(value & 0x8000) << 16; // sign for 32-bit
+            uint exp = (uint)(value & 0x7c00) >> 10;  // exponenent for 16-bit
+            uint coef = (uint)(value & 0x03ff) << 13; // significand for 32-bit
+
+            if (exp == 0x1f)
+            {
+                if (coef == 0)
+                {
+                    // infinity
+                    return sign | 0x7f800000 | coef;
+                }
+                // NaN
+                return sign | 0x7fc00000 | coef;
+            }
+
+            if (exp == 0)
+            {
+                if (coef == 0)
+                {
+                    // zero
+                    return sign;
+                }
+
+                // normalize subnormal numbers
+                exp++;
+
+
+                while ((coef & 0x7f800000) == 0)
+                {
+                    coef <<= 1;
+                    exp--;
+                }
+
+                coef &= 0x007fffff;
+            }
+
+            return sign | ((exp + (0x7f - 0xf)) << 23) | coef;
         }
     }
 }
