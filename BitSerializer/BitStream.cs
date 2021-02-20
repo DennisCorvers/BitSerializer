@@ -297,6 +297,8 @@ namespace BitSerializer
 
             // Round down to previous multiple of 8 so we don't overwrite
             // memory that is located beyond out buffer.
+
+            // TODO: This should only happen when writing, else we miss some data from the read buffer!
             length = MathUtils.GetPreviousMultipleOf8(length);
 
             if (length < 8)

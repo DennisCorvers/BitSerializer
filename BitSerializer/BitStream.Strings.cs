@@ -25,6 +25,82 @@ namespace BitSerializer
             return this;
         }
 
+        public BitStreamer WriteString(string value, FastEncoding encoding = FastEncoding.ASCII)
+        {
+            if (encoding == FastEncoding.ASCII)
+                return WriteASCII(value);
+
+            return WriteUTF16(value);
+        }
+
+        /// <summary>
+        /// Writes 1 byte per character
+        /// </summary>
+        public BitStreamer WriteASCII(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(nameof(value));
+
+            int totalBytes = value.Length;
+
+            if (totalBytes > ushort.MaxValue)
+                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
+
+            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
+            WriteUnchecked((ushort)totalBytes, 16);
+
+            if (totalBytes <= 256)
+            {
+                byte* buffer = stackalloc byte[totalBytes];
+                for (int i = 0; i < value.Length; i++)
+                    buffer[i] = (byte)value[i];
+
+                WriteMemoryUnchecked(buffer, totalBytes);
+            }
+            else
+            {
+                byte* buffer = (byte*)Memory.Alloc(totalBytes);
+                try
+                {
+                    for (int i = 0; i < value.Length; i++)
+                        buffer[i] = (byte)value[i];
+
+                    WriteMemoryUnchecked(buffer, totalBytes);
+                }
+                finally
+                {
+                    // Ensure we don't have a mem leak.
+                    Memory.Free(buffer);
+                }
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes 2 bytes per character.
+        /// </summary>
+        public BitStreamer WriteUTF16(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(nameof(value));
+
+            int totalBytes = value.Length * 2;
+
+            if (totalBytes > ushort.MaxValue)
+                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
+
+            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
+            WriteUnchecked((ushort)totalBytes, 16);
+
+            fixed (char* ptr = value)
+            {
+                WriteMemoryUnchecked(ptr, totalBytes);
+            }
+
+            return this;
+        }
+
         /// <summary>
         /// Writes a string to the <see cref="BitStreamer"/>. 
         /// Includes the bytesize as an uint16.
@@ -58,11 +134,11 @@ namespace BitSerializer
             return this;
         }
 
-        private void WriteStringInternal(char* ptr, int charSize, Encoding encoding)
+        private void WriteStringInternal(char* ptr, int charCount, Encoding encoding)
         {
             const int BUFFERSIZE = 256;
 
-            int byteSize = encoding.GetByteCount(ptr, charSize);
+            int byteSize = encoding.GetByteCount(ptr, charCount);
 
             if (byteSize > ushort.MaxValue)
                 throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
@@ -76,7 +152,7 @@ namespace BitSerializer
             if (byteSize <= BUFFERSIZE)
             {
                 byte* buffer = stackalloc byte[byteSize];
-                encoding.GetBytes(ptr, charSize, buffer, byteSize);
+                encoding.GetBytes(ptr, charCount, buffer, byteSize);
                 WriteMemoryUnchecked(buffer, byteSize);
             }
             // Slow route, alloc mem for large strings.
@@ -85,7 +161,7 @@ namespace BitSerializer
                 byte* buffer = (byte*)Memory.Alloc(byteSize);
                 try
                 {
-                    encoding.GetBytes(ptr, charSize, buffer, byteSize);
+                    encoding.GetBytes(ptr, charCount, buffer, byteSize);
                     WriteMemoryUnchecked(ptr, byteSize);
                 }
                 finally
@@ -95,6 +171,7 @@ namespace BitSerializer
                 }
             }
         }
+
 
         /// <summary>
         /// Reads a string from the <see cref="BitStreamer"/>.
@@ -132,6 +209,27 @@ namespace BitSerializer
                 }
             }
         }
+
+        public string ReadString(FastEncoding encoding = FastEncoding.ASCII)
+        {
+            if (encoding == FastEncoding.ASCII)
+                return ReadASCII();
+
+            return ReadUTF16();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string ReadASCII()
+        {
+            return ReadString(Encoding.ASCII);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string ReadUTF16()
+        {
+            return ReadString(Encoding.Unicode);
+        }
+
 
         /// <summary>
         /// Reads a string from the <see cref="BitStreamer"/>.
@@ -172,8 +270,17 @@ namespace BitSerializer
             return charCount;
         }
 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitStreamer Serialize(ref string value, Encoding encoding)
+        {
+            if (m_mode == SerializationMode.Writing) WriteString(value, encoding);
+            else value = ReadString(encoding);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BitStreamer Serialize(ref string value, FastEncoding encoding = FastEncoding.ASCII)
         {
             if (m_mode == SerializationMode.Writing) WriteString(value, encoding);
             else value = ReadString(encoding);

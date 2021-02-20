@@ -31,13 +31,25 @@ namespace Bench
         {
             stream.ResetWrite(m_ptrBuf, SIZE);
 
-            const string str = "1LEFiWTEkFR1acY5mLb915mnIdvumHTiGADno8DaQAggFs0HxlHolmHoB0Mm3phKo85ahUjL4V6utXuWr6YdK3ANIuTX2vZmcx0gP9QNdqjguWFe8WDWDj91Hc0lqVBix8bNrAERgqrgkgFpe4IUXckAqWik4tlMuhLpWoWenF4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIexXDx4tOOETniVDuCj1OtLp3tmfguRRDeLkND0RxCKoHO7qTWngVB9myQ8upOOuBxxk2bx8OFnTkFBPzVJf1CKKxHS4xMYBlwcRCKS9JlXHZPYryCMgQM7CaRG9nNYHR4r0wzYwl2RXP49narcxCuSgDcOn5ivrGVTJhjDDJDsJpGwTgJbGDnrW9JSUnP4jl1LSdzN3gcaVkSDosl12GTROxujH8hxaC1KggZirJ1IwK68tutwr4YnXKm4veCDCVZjj7WSiBqdo1XQUiTJvBt";
-
+            const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
             stream.WriteString(str, Encoding.ASCII);
 
             stream.ResetRead();
 
             var replica = stream.ReadString(Encoding.ASCII);
+        }
+
+        [Benchmark]
+        public void UTF16Write()
+        {
+            stream.ResetWrite(m_ptrBuf, SIZE);
+
+            const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
+            stream.WriteASCII(str);
+
+            stream.ResetRead();
+
+            var replica = stream.ReadASCII();
         }
     }
 }

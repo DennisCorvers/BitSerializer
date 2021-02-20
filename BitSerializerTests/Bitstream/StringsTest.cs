@@ -76,5 +76,58 @@ namespace BitSerializer.Bitstream
 
             Assert.AreEqual(value, replica);
         }
+
+        [Test]
+        public void FStringASCIITest()
+        {
+            string value = "12345678";
+
+            m_stream.WriteASCII(value);
+            Assert.AreEqual(10, m_stream.ByteOffset);
+
+            m_stream.ResetRead();
+
+            Assert.AreEqual(value, m_stream.ReadASCII());
+            Assert.AreEqual(10, m_stream.ByteOffset);
+        }
+
+        [Test]
+        public void FStringUTF16Test()
+        {
+            string value = "12345678";
+
+            m_stream.WriteUTF16(value);
+            Assert.AreEqual(18, m_stream.ByteOffset);
+
+            m_stream.ResetRead();
+
+            Assert.AreEqual(value, m_stream.ReadUTF16());
+            Assert.AreEqual(18, m_stream.ByteOffset);
+        }
+
+        [TestCase("手機瀏覽")]
+        [TestCase("HelloWorld!")]
+        public void FUTF16SpecialCharTest(string value)
+        {
+            m_stream.WriteUTF16(value);
+            Assert.AreEqual(sizeof(ushort) + value.Length * 2, m_stream.ByteOffset);
+
+            m_stream.ResetRead();
+            Assert.AreEqual(value, m_stream.ReadString(Encoding.Unicode));
+        }
+
+        [TestCase("手機瀏覽", FastEncoding.UTF16)]
+        [TestCase("HelloWorld!", FastEncoding.UTF16)]
+        [TestCase("HelloWorld!", FastEncoding.ASCII)]
+        public void FStringSerializeTest(string value, FastEncoding encoding)
+        {
+            string replica = "";
+            m_stream.Serialize(ref value, encoding);
+            m_stream.ResetRead();
+
+            m_stream.Serialize(ref replica, encoding);
+
+            Assert.AreEqual(value, replica);
+        }
     }
 }
