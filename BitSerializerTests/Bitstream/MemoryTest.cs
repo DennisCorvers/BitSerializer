@@ -60,25 +60,30 @@ namespace BitSerializer.Bitstream
         [TestCase(123)]
         public void BytesTest(int value)
         {
-            byte[] dat = new byte[8];
+            byte[] dat = new byte[12];
             fixed (byte* ptr = dat)
             {
                 Write(value, ptr);
                 Write(value * -1, ptr + 4);
+                Write(value * value, ptr + 8);
             }
 
-            m_stream.WriteBytes(dat, 0, 8, true);
-            Assert.AreEqual(10, m_stream.ByteOffset);
+            m_stream.Skip(1);
+            m_stream.WriteBytes(dat, true);
+            Assert.AreEqual(14.125f, m_stream.ByteOffset);
 
             m_stream.ResetRead();
-            byte[] rep = m_stream.ReadBytesLength();
-            Assert.AreEqual(10, m_stream.ByteOffset);
-            Assert.AreEqual(8, rep.Length);
+            m_stream.Skip(1);
+
+            byte[] rep = m_stream.ReadBytes();
+            Assert.AreEqual(14.125f, m_stream.ByteOffset);
+            Assert.AreEqual(12, rep.Length);
 
             fixed (byte* ptr = rep)
             {
                 Assert.AreEqual(value, Read<int>(ptr));
                 Assert.AreEqual(value * -1, Read<int>(ptr + 4));
+                Assert.AreEqual(value * value, Read<int>(ptr + 8));
             }
         }
 

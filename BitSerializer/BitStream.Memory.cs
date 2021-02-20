@@ -6,13 +6,42 @@ namespace BitSerializer
 {
     public unsafe partial class BitStreamer
     {
+        private void WriteMemoryUnchecked(void* ptr, int byteSize)
+        {
+            long c = byteSize >> 3; // longs
+            ulong* lp = (ulong*)ptr;
+            byte* bp = (byte*)ptr;
+
+            int i = 0;
+            for (; i < c; i++)
+                WriteUnchecked(lp[i], 64);
+
+            i = i << 3;
+            for (; i < byteSize; i++)
+                WriteUnchecked(bp[i], 8);
+        }
+
+        private void ReadMemoryUnchecked(void* ptr, int byteSize)
+        {
+            long c = byteSize >> 3; // longs
+            ulong* lp = (ulong*)ptr;
+            byte* bp = (byte*)ptr;
+
+            int i = 0;
+            for (; i < c; i++)
+                lp[i] = ReadUnchecked(64);
+
+            i = i << 3;
+            for (; i < byteSize; i++)
+                bp[i] = unchecked((byte)ReadUnchecked(8));
+        }
+
         /// <summary>
         /// Writes raw data to the <see cref="BitStreamer"/>.
         /// </summary>
         public BitStreamer WriteMemory(IntPtr ptr, int byteSize)
         {
-            WriteMemory((void*)ptr, byteSize);
-            return this;
+            return WriteMemory((void*)ptr, byteSize);
         }
 
         /// <summary>
@@ -26,18 +55,10 @@ namespace BitSerializer
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            int numLongs = byteSize >> 3;
-            ulong* p = (ulong*)ptr;
+            // Make sure there is enough space for the entire memory write operation.
+            EnsureWriteSize(byteSize * 8);
 
-            for (int i = 0; i < numLongs; i++)
-                Write(p[i], 64);
-
-            byte* bptr = (byte*)&p[numLongs];
-            for (int i = byteSize - numLongs * 8; i > 0; i--)
-            {
-                WriteByte(*bptr);
-                bptr++;
-            }
+            WriteMemoryUnchecked(ptr, byteSize);
 
             return this;
         }
@@ -61,18 +82,15 @@ namespace BitSerializer
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            int numLongs = byteSize >> 3;
+            // Make sure there is enough space for the entire memory read operation.
+            EnsureReadSize(byteSize);
 
-            ulong* p = (ulong*)ptr;
-            for (int i = 0; i < numLongs; i++)
-                p[i] = Read(64);
+            ReadMemoryUnchecked(ptr, byteSize);
+        }
 
-            byte* bptr = (byte*)&p[numLongs];
-            for (int i = byteSize - numLongs * sizeof(ulong); i > 0; i--)
-            {
-                *bptr = ReadByte();
-                bptr++;
-            }
+        public BitStreamer WriteBytes(byte[] bytes, bool includeSize = false)
+        {
+            return WriteBytes(bytes, 0, bytes.Length, includeSize);
         }
 
         /// <summary>
@@ -89,12 +107,47 @@ namespace BitSerializer
             if (includeSize)
                 WriteUShort((ushort)count);
 
+            // Make sure there is enough space for the entire memory write operation.
+            EnsureWriteSize(count);
+
             fixed (byte* ptr = &bytes[offset])
             {
-                WriteMemory(ptr, count);
+                WriteMemoryUnchecked(ptr, count);
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Reads an array of bytes from the <see cref="BitStreamer"/>.
+        /// Length is automatically retrieved as an uint16.
+        /// </summary>
+        public byte[] ReadBytes()
+        {
+            ushort length = ReadUShort();
+
+            return ReadBytes(length);
+        }
+
+        /// <summary>
+        /// Reads an array of bytes from the <see cref="BitStreamer"/>.
+        /// </summary>
+        /// <param name="count">The amount of bytes to read.</param>
+        public byte[] ReadBytes(int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            EnsureReadSize(count);
+
+            byte[] val = new byte[count];
+
+            fixed (byte* ptr = val)
+            {
+                ReadMemoryUnchecked(ptr, count);
+            }
+
+            return val;
         }
 
         /// <summary>
@@ -110,16 +163,8 @@ namespace BitSerializer
 
             fixed (byte* ptr = &bytes[offset])
             {
-                ReadMemory(ptr, count); ;
+                ReadMemory(ptr, count);
             }
-        }
-
-        public byte[] ReadBytesLength()
-        {
-            ushort length = ReadUShort();
-            byte[] val = new byte[length];
-            ReadBytes(val, 0, length);
-            return val;
         }
 
         /// <summary>

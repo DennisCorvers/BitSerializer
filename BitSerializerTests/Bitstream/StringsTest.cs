@@ -63,5 +63,18 @@ namespace BitSerializer.Bitstream
             string repStr = new string(rep, 0, charCount);
             Assert.AreEqual(value, repStr);
         }
+
+        [TestCase("手機瀏覽")]
+        [TestCase("HelloWorld!")]
+        public void StringSerializeTest(string value)
+        {
+            string replica = "";
+            m_stream.Serialize(ref value, Encoding.UTF32);
+            m_stream.ResetRead();
+
+            m_stream.Serialize(ref replica, Encoding.UTF32);
+
+            Assert.AreEqual(value, replica);
+        }
     }
 }

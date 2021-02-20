@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace Bench
 {
+    [MemoryDiagnoser]
     public class SerializeBench
     {
         private const int AMOUNT = 1024;
@@ -133,42 +134,40 @@ namespace Bench
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void VectorOld()
         {
             BitStreamer stream = new BitStreamer();
             stream.ResetWrite(m_ptrBuf, SIZE, false);
             Vector2 v = new Vector2(123.321f, 8810283094.3241827391f);
 
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 512; i++)
             {
                 stream.WriteVector2(v);
             }
 
             stream.ResetRead();
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 512; i++)
             {
                 var vect = stream.ReadVector2();
             }
         }
 
-        //[Benchmark]
-        public void VectorNew()
+        [Benchmark]
+        public void StringWrite()
         {
             BitStreamer stream = new BitStreamer();
-            stream.ResetWrite(m_ptrBuf, SIZE, false);
-            Vector2 v = new Vector2(123.321f, 8810283094.3241827391f);
+            stream.ResetWrite(m_ptrBuf, SIZE);
 
-            for (int i = 0; i < 256; i++)
+            const string str = "TestString123";
+            Encoding enc = Encoding.Default;
+
+            for (int i = 0; i < 100; i++)
             {
-                stream.WriteVector2(v);
+                stream.WriteString(str, enc);
             }
 
             stream.ResetRead();
-            for (int i = 0; i < 256; i++)
-            {
-                var vect = stream.ReadVector2();
-            }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace BitSerializerTests.Bitstream
         [Test]
         public void Vector2Test()
         {
-            Vector2 value = new Vector2(rnd.NextSmallFloat(), rnd.NextSmallFloat());
+            Vector2 value = new Vector2(rnd.NextFloat(), rnd.NextFloat());
             stream.Skip(1);
             stream.WriteVector2(value);
 
