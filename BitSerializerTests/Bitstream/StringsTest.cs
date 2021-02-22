@@ -64,6 +64,48 @@ namespace BitSerializer.Bitstream
             Assert.AreEqual(value, repStr);
         }
 
+        [Test]
+        public void CharArraySmallTest()
+        {
+            CharArraySmall(Encoding.ASCII);
+            CharArraySmall(Encoding.Default);
+            CharArraySmall(Encoding.Unicode);
+            CharArraySmall(Encoding.BigEndianUnicode);
+        }
+
+        private void CharArraySmall(Encoding encoding)
+        {
+            m_stream.ResetWrite();
+
+            char[] rep = new char[4];
+
+            m_stream.WriteString("TestString", encoding);
+            m_stream.ResetRead();
+
+            int charCount = m_stream.ReadString(rep, 0, encoding);
+
+            Assert.AreEqual(charCount, rep.Length);
+            string repStr = new string(rep, 0, charCount);
+            Assert.AreEqual("Test", repStr);
+        }
+
+        [TestCase("手機瀏覽")]
+        [TestCase("HelloWorld!")]
+        public unsafe void MixedSerializeTest(string value)
+        {
+            fixed (char* ptr = value)
+            {
+                m_stream.WriteString(ptr, value.Length, Encoding.UTF32);
+            }
+
+            string replica = "";
+            m_stream.ResetRead();
+
+            m_stream.Serialize(ref replica, Encoding.UTF32);
+
+            Assert.AreEqual(value, replica);
+        }
+
         [TestCase("手機瀏覽")]
         [TestCase("HelloWorld!")]
         public void StringSerializeTest(string value)

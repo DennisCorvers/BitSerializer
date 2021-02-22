@@ -248,26 +248,80 @@ namespace BitSerializer
 
         /// <summary>
         /// Reads a string from the <see cref="BitStreamer"/>.
+        /// Reads a maximum of charLength or the original string length.
         /// </summary>
-        public int ReadString(char* ptr, int charLength, Encoding encoding)
+        public int ReadString(char* ptr, int ptrLength, Encoding encoding)
         {
-            return ReadStringInternal(ptr, charLength, encoding);
+            return ReadStringInternal(ptr, ptrLength, encoding);
         }
 
         private int ReadStringInternal(char* str, int charLength, Encoding encoding)
         {
-            ushort byteCount = Math.Min(ReadUShort(), (ushort)(256 * 4));
+            const int BUFFERSIZE = 256;
+            ushort byteSize = ReadUShort();
 
-            if (byteCount == 0)
+            if (byteSize == 0)
                 return 0;
 
-            byte* buffer = stackalloc byte[byteCount];
-            int charCount = Math.Min(encoding.GetCharCount(buffer, byteCount), charLength);
+            EnsureReadSize(byteSize * 8);
 
-            ReadMemory(buffer, byteCount);
-            encoding.GetChars(buffer, byteCount, str, charCount);
+            // Fast route, use stackalloc for small strings.
+            if (byteSize <= BUFFERSIZE)
+            {
+                byte* buffer = stackalloc byte[byteSize];
+                return DecodeString(buffer, byteSize, str, charLength, encoding);
+            }
+            // Slow route, alloc mem for large strings.
+            else
+            {
+                byte* buffer = (byte*)Memory.Alloc(byteSize);
+                try
+                {
+                    return DecodeString(buffer, byteSize, str, charLength, encoding);
+                }
+                finally
+                {
+                    // Ensure we don't have a mem leak.
+                    Memory.Free(buffer);
+                }
+            }
+        }
 
-            return charCount;
+        private int DecodeString(byte* buffer, int bufferSize, char* str, int maxChars, Encoding encoding)
+        {
+            ReadMemoryUnchecked(buffer, bufferSize);
+
+            int maxCharCount = encoding.GetMaxCharCount(bufferSize);
+            if (maxCharCount <= 128)
+            {
+                char* chrBuf = stackalloc char[maxCharCount];
+                return InnerDecode(chrBuf);
+            }
+            else
+            {
+                char* chrBuf = (char*)Memory.Alloc(maxCharCount * 2);
+                try
+                {
+                    return InnerDecode(chrBuf);
+                }
+                finally
+                {
+                    // Ensure we don't have a mem leak.
+                    Memory.Free(buffer);
+                }
+            }
+
+            int InnerDecode(char* chrBuf)
+            {
+                // Copy to temp buffer.
+                int charCount = encoding.GetChars(buffer, bufferSize, chrBuf, maxCharCount);
+
+                // Copy to destination buffer.
+                int charsToCopy = Math.Min(charCount, maxChars);
+                Memory.CopyMemory(chrBuf, str, charsToCopy * 2);
+
+                return charsToCopy;
+            }
         }
 
 

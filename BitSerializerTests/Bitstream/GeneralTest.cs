@@ -103,6 +103,54 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
+        public void NonAlignBufferTest()
+        {
+            IntPtr ptr = Memory.Alloc(12);
+
+            BitStreamer bs = new BitStreamer();
+            bs.ResetWrite(ptr, 12);
+
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.ResetRead();
+            Assert.AreEqual(12, bs.ByteLength);
+
+            bs.ResetWrite();
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.WriteULong(123);
+
+            // The write buffer should be rounded down to 8. So this must fail.
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                bs.WriteByte(1);
+            });
+
+            Memory.Free(ptr);
+        }
+
+        [Test]
+        public void NonAlignBufferSet()
+        {
+            IntPtr ptr = Memory.Alloc(12);
+
+            BitStreamer bs = new BitStreamer();
+            bs.ResetRead(ptr, 4);
+
+            Assert.AreEqual(4, bs.ByteLength);
+            bs.ReadFloat();
+
+            // Should fail because we are exceeding the allowed size of 4.
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                bs.ReadByte(1);
+            });
+
+            bs.ResetWrite();
+            Assert.AreEqual(0, bs.ByteLength);
+        }
+
+        [Test]
         public void ResetWriteTest2()
         {
             BitStreamer bs = new BitStreamer();

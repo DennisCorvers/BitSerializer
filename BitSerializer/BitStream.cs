@@ -33,7 +33,15 @@ namespace BitSerializer
 
 #pragma warning disable IDE0032
         private ulong* m_buffer;
-        private int m_bitLength;
+        /// <summary>
+        /// The entire bit size of the buffer.
+        /// </summary>
+        private int m_fullBitLength;
+        /// <summary>
+        /// Bit size of the buffer rounded down to the nearest multiple of 8.
+        /// This is to prevent overwriting memory that isn't ours.
+        /// </summary>
+        private int m_bitWriteLength;
 
         private int m_offset;
         private SerializationMode m_mode;
@@ -68,12 +76,18 @@ namespace BitSerializer
         /// The total <see cref="BitStreamer"/> length in bits.
         /// </summary>
         public int BitLength
-            => m_bitLength;
+        {
+            get
+            {
+                return IsReading ? m_fullBitLength : m_bitWriteLength;
+            }
+        }
+
         /// <summary>
         /// The total <see cref="BitStreamer"/> length in bytes.
         /// </summary>
         public int ByteLength
-            => m_bitLength >> 3;
+            => BitLength >> 3;
 
         /// <summary>
         /// The current streaming mode.
@@ -106,11 +120,11 @@ namespace BitSerializer
             if (!m_ownsBuffer)
                 throw new InvalidOperationException("Inner buffer is exceeded");
 
-            int newBitSize = Math.Max(m_bitLength * 2, bufferBitSize);
+            int newBitSize = Math.Max(m_fullBitLength * 2, bufferBitSize);
             int newByteSize = MathUtils.GetNextMultipleOf8(newBitSize >> 3);
 
-            m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, m_bitLength >> 3, newByteSize);
-            m_bitLength = newByteSize * 8;
+            m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, m_fullBitLength >> 3, newByteSize);
+            m_fullBitLength = m_bitWriteLength = newByteSize * 8;
         }
 
         /// <summary>
@@ -179,7 +193,7 @@ namespace BitSerializer
             if (copy)
                 CopyBufferToInternal(ptr, length);
             else
-                SetBufferAsInternal(ptr, length);
+                SetBufferAsInternal(ptr, length, false);
 
             m_offset = 0;
             m_mode = SerializationMode.Reading;
@@ -199,7 +213,7 @@ namespace BitSerializer
             else
             {
                 // Clear existing memory.
-                Memory.ZeroMem(m_buffer, m_bitLength >> 3);
+                Memory.ZeroMem(m_buffer, m_fullBitLength >> 3);
 
                 m_offset = 0;
                 m_mode = SerializationMode.Writing;
@@ -223,6 +237,7 @@ namespace BitSerializer
 
         /// <summary>
         /// Resets the <see cref="BitStreamer"/> for writing using an existing buffer.
+        /// Length will be rounded down to a multiple of 8.
         /// </summary>
         /// <param name="buffer">The buffer to write to</param>
         /// <param name="length">The length of the supplied buffer</param>
@@ -233,6 +248,7 @@ namespace BitSerializer
 
         /// <summary>
         /// Resets the <see cref="BitStreamer"/> for writing using an existing buffer.
+        /// Length will be rounded down to a multiple of 8.
         /// </summary>
         /// <param name="buffer">The buffer to write to</param>
         /// <param name="length">The length of the supplied buffer</param>
@@ -250,10 +266,10 @@ namespace BitSerializer
             }
             else
             {
-                SetBufferAsInternal(ptr, length);
+                SetBufferAsInternal(ptr, length, true);
 
                 // Clear out buffer and set the offset to zero.
-                Memory.ZeroMem(m_buffer, m_bitLength >> 3);
+                Memory.ZeroMem(m_buffer, m_fullBitLength >> 3);
                 m_offset = 0;
             }
 
@@ -264,7 +280,7 @@ namespace BitSerializer
         {
             int bitLength = length << 3;
             int bytesToClear = ByteLength - length;
-            if (m_ownsBuffer && m_bitLength < bitLength)
+            if (m_ownsBuffer && m_fullBitLength < bitLength)
             {
                 // We need to reallocate the buffer because it is too small.
                 // Free the buffer first to we can allocate it later and copy.
@@ -276,9 +292,9 @@ namespace BitSerializer
             if (!m_ownsBuffer)
             {
                 // Allocate a new buffer.
-                int newByteLength = Math.Max(m_bitLength >> 3, MathUtils.GetNextMultipleOf8(length));
+                int newByteLength = Math.Max(m_fullBitLength >> 3, MathUtils.GetNextMultipleOf8(length));
                 m_buffer = (ulong*)Memory.Alloc(newByteLength);
-                m_bitLength = newByteLength * 8;
+                m_bitWriteLength = m_fullBitLength = newByteLength * 8;
                 bytesToClear = newByteLength - length;
             }
             // Copy the buffer
@@ -290,22 +306,20 @@ namespace BitSerializer
             m_ownsBuffer = true;
         }
 
-        private void SetBufferAsInternal(void* buffer, int length)
+        private void SetBufferAsInternal(void* buffer, int length, bool writing)
         {
             if (m_ownsBuffer)
                 throw new InvalidOperationException("BitStream owns a buffer. Call Deallocate first.");
 
-            // Round down to previous multiple of 8 so we don't overwrite
-            // memory that is located beyond out buffer.
+            int rdLen = MathUtils.GetPreviousMultipleOf8(length);
 
-            // TODO: This should only happen when writing, else we miss some data from the read buffer!
-            length = MathUtils.GetPreviousMultipleOf8(length);
-
-            if (length < 8)
+            // Write buffer must have at least 8 bytes to write to.
+            if (writing && rdLen < 8)
                 throw new ArgumentOutOfRangeException(nameof(length), "Length must be at least 8 bytes.");
 
             m_buffer = (ulong*)buffer;
-            m_bitLength = length * 8;
+            m_fullBitLength = length * 8;
+            m_bitWriteLength = rdLen * 8;
         }
 
         /// <summary>
@@ -336,7 +350,7 @@ namespace BitSerializer
             Debug.Assert(length % 8 == 0);
 
             int bitLength = length << 3;
-            if (m_ownsBuffer && m_bitLength < bitLength)
+            if (m_ownsBuffer && m_fullBitLength < bitLength)
             {
                 Memory.Free(m_buffer);
                 m_ownsBuffer = false;
@@ -344,12 +358,12 @@ namespace BitSerializer
 
             if (!m_ownsBuffer)
             {
-                int newByteLength = Math.Max(m_bitLength >> 3, length);
+                int newByteLength = Math.Max(m_fullBitLength >> 3, length);
                 m_buffer = (ulong*)Memory.Alloc(newByteLength);
-                m_bitLength = newByteLength * 8;
+                m_bitWriteLength = m_fullBitLength = newByteLength * 8;
             }
 
-            Memory.ZeroMem((byte*)m_buffer, m_bitLength >> 3);
+            Memory.ZeroMem((byte*)m_buffer, m_fullBitLength >> 3);
             m_ownsBuffer = true;
         }
 
@@ -397,7 +411,8 @@ namespace BitSerializer
 
             Memory.Free(m_buffer);
             m_offset = 0;
-            m_bitLength = 0;
+            m_fullBitLength = 0;
+            m_bitWriteLength = 0;
             m_mode = SerializationMode.None;
             m_buffer = null;
             m_ownsBuffer = false;
@@ -504,7 +519,7 @@ namespace BitSerializer
             Debug.Assert(m_mode == SerializationMode.Reading);
 
             // Casting to uint also checks negative bitCount values.
-            if (m_offset + (uint)bitCount > m_bitLength)
+            if (m_offset + (uint)bitCount > m_fullBitLength)
                 throw new InvalidOperationException("Inner buffer is exceeded");
         }
 
@@ -517,7 +532,7 @@ namespace BitSerializer
             // Casting to uint checks negative numbers.
             long newSize = m_offset + (uint)bitCount;
 
-            if (newSize > m_bitLength)
+            if (newSize > m_bitWriteLength)
                 Resize((int)newSize);
         }
 

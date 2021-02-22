@@ -39,17 +39,19 @@ namespace Bench
             var replica = stream.ReadString(Encoding.ASCII);
         }
 
+        static char[] myString = new char[32];
+
         [Benchmark]
         public void UTF16Write()
         {
             stream.ResetWrite(m_ptrBuf, SIZE);
 
             const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
-            stream.WriteASCII(str);
+            stream.WriteString(str, Encoding.ASCII);
 
             stream.ResetRead();
 
-            var replica = stream.ReadASCII();
+            var replica = stream.ReadString(myString, 0, Encoding.ASCII);
         }
     }
 }
