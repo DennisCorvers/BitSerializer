@@ -373,8 +373,8 @@ namespace BitSerializer
         /// <param name="bitCount">Amount of bits to skip</param>
         public BitStreamer Skip(int bitCount)
         {
-            if (bitCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(bitCount));
+            if (bitCount <= 0)
+                return this;
 
             if (m_mode == SerializationMode.Writing)
             {

@@ -54,10 +54,10 @@ namespace BitSerializer.Bitstream
             char[] arr = value.ToCharArray();
             char[] rep = new char[16];
 
-            m_stream.WriteString(arr, Encoding.UTF32);
+            m_stream.WriteString(arr, FastEncoding.UTF16);
             m_stream.ResetRead();
 
-            int charCount = m_stream.ReadString(rep, 0, Encoding.UTF32);
+            int charCount = m_stream.ReadString(rep, FastEncoding.UTF16);
 
             Assert.AreEqual(charCount, value.Length);
             string repStr = new string(rep, 0, charCount);
@@ -65,15 +65,31 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
-        public void CharArraySmallTest()
+        public void CharArrayOffsetTest()
         {
-            CharArraySmall(Encoding.ASCII);
-            CharArraySmall(Encoding.Default);
-            CharArraySmall(Encoding.Unicode);
-            CharArraySmall(Encoding.BigEndianUnicode);
+            const string value = "myTestString";
+
+            char[] arr = value.ToCharArray();
+            char[] rep = new char[16];
+
+            m_stream.WriteString(arr, 2, 4, FastEncoding.UTF16);
+            m_stream.ResetRead();
+
+            int charCount = m_stream.ReadString(rep, FastEncoding.UTF16);
+
+            Assert.AreEqual(4, charCount);
+            string repStr = new string(rep, 0, charCount);
+            Assert.AreEqual("Test", repStr);
         }
 
-        private void CharArraySmall(Encoding encoding)
+        [Test]
+        public void CharArraySmallTest()
+        {
+            CharArraySmall(FastEncoding.ASCII);
+            CharArraySmall(FastEncoding.UTF16);
+        }
+
+        private void CharArraySmall(FastEncoding encoding)
         {
             m_stream.ResetWrite();
 
@@ -82,7 +98,7 @@ namespace BitSerializer.Bitstream
             m_stream.WriteString("TestString", encoding);
             m_stream.ResetRead();
 
-            int charCount = m_stream.ReadString(rep, 0, encoding);
+            int charCount = m_stream.ReadString(rep, encoding);
 
             Assert.AreEqual(charCount, rep.Length);
             string repStr = new string(rep, 0, charCount);
@@ -95,13 +111,13 @@ namespace BitSerializer.Bitstream
         {
             fixed (char* ptr = value)
             {
-                m_stream.WriteString(ptr, value.Length, Encoding.UTF32);
+                m_stream.WriteString(ptr, value.Length, FastEncoding.UTF16);
             }
 
             string replica = "";
             m_stream.ResetRead();
 
-            m_stream.Serialize(ref replica, Encoding.UTF32);
+            m_stream.Serialize(ref replica, FastEncoding.UTF16);
 
             Assert.AreEqual(value, replica);
         }

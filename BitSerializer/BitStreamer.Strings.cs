@@ -25,115 +25,6 @@ namespace BitSerializer
             return this;
         }
 
-        public BitStreamer WriteString(string value, FastEncoding encoding = FastEncoding.ASCII)
-        {
-            if (encoding == FastEncoding.ASCII)
-                return WriteASCII(value);
-
-            return WriteUTF16(value);
-        }
-
-        /// <summary>
-        /// Writes 1 byte per character
-        /// </summary>
-        public BitStreamer WriteASCII(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentNullException(nameof(value));
-
-            int totalBytes = value.Length;
-
-            if (totalBytes > ushort.MaxValue)
-                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
-
-            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
-            WriteUnchecked((ushort)totalBytes, 16);
-
-            if (totalBytes <= 256)
-            {
-                byte* buffer = stackalloc byte[totalBytes];
-                for (int i = 0; i < value.Length; i++)
-                    buffer[i] = (byte)value[i];
-
-                WriteMemoryUnchecked(buffer, totalBytes);
-            }
-            else
-            {
-                byte* buffer = (byte*)Memory.Alloc(totalBytes);
-                try
-                {
-                    for (int i = 0; i < value.Length; i++)
-                        buffer[i] = (byte)value[i];
-
-                    WriteMemoryUnchecked(buffer, totalBytes);
-                }
-                finally
-                {
-                    // Ensure we don't have a mem leak.
-                    Memory.Free(buffer);
-                }
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Writes 2 bytes per character.
-        /// </summary>
-        public BitStreamer WriteUTF16(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentNullException(nameof(value));
-
-            int totalBytes = value.Length * 2;
-
-            if (totalBytes > ushort.MaxValue)
-                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
-
-            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
-            WriteUnchecked((ushort)totalBytes, 16);
-
-            fixed (char* ptr = value)
-            {
-                WriteMemoryUnchecked(ptr, totalBytes);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Writes a string to the <see cref="BitStreamer"/>. 
-        /// Includes the bytesize as an uint16.
-        /// </summary>
-        public BitStreamer WriteString(char[] str, Encoding encoding)
-        {
-            if (str == null)
-                throw new ArgumentNullException(nameof(str));
-
-            fixed (char* ptr = str)
-            {
-                WriteStringInternal(ptr, str.Length, encoding);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Writes a string to the <see cref="BitStreamer"/>. 
-        /// Includes the bytesize as an uint16.
-        /// </summary>
-        public BitStreamer WriteString(char* ptr, int charCount, Encoding encoding)
-        {
-            if (ptr == null)
-                throw new ArgumentNullException(nameof(ptr));
-
-            if (charCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(charCount));
-
-            WriteStringInternal(ptr, charCount, encoding);
-            return this;
-        }
-
         private void WriteStringInternal(char* ptr, int charCount, Encoding encoding)
         {
             const int BUFFERSIZE = 256;
@@ -170,6 +61,144 @@ namespace BitSerializer
                     Memory.Free(buffer);
                 }
             }
+        }
+
+
+        public BitStreamer WriteString(string value, FastEncoding encoding = FastEncoding.ASCII)
+        {
+            if (encoding == FastEncoding.ASCII)
+                return WriteASCII(value);
+
+            return WriteUTF16(value);
+        }
+
+        /// <summary>
+        /// Writes 1 byte per character
+        /// </summary>
+        public BitStreamer WriteASCII(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(nameof(value));
+
+            fixed (char* str = value)
+            {
+                WriteASCIIInternal(str, value.Length);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes 2 bytes per character.
+        /// </summary>
+        public BitStreamer WriteUTF16(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(nameof(value));
+
+            fixed (char* ptr = value)
+            {
+                WriteUTF16Internal(ptr, value.Length);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes a string to the <see cref="BitStreamer"/>. 
+        /// Includes the bytesize as an uint16.
+        /// </summary>
+        public BitStreamer WriteString(char[] str, FastEncoding encoding)
+        {
+            return WriteString(str, 0, str.Length, encoding);
+        }
+
+        public BitStreamer WriteString(char[] str, int offset, int length, FastEncoding encoding)
+        {
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+
+            if ((uint)offset + (uint)length > str.Length)
+                throw new ArgumentOutOfRangeException("Offset and length exceed buffer.");
+
+            fixed (char* ptr = &str[offset])
+            {
+                if (encoding == FastEncoding.ASCII)
+                    WriteASCIIInternal(ptr, length);
+                else
+                    WriteUTF16Internal(ptr, length);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Writes a string to the <see cref="BitStreamer"/>. 
+        /// Includes the bytesize as an uint16.
+        /// </summary>
+        public BitStreamer WriteString(char* ptr, int charCount, FastEncoding encoding)
+        {
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
+
+            if (charCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(charCount));
+
+            if (encoding == FastEncoding.ASCII)
+                WriteASCIIInternal(ptr, charCount);
+            else
+                WriteUTF16Internal(ptr, charCount);
+
+            return this;
+        }
+
+        private void WriteASCIIInternal(char* ptr, int charCount)
+        {
+            int totalBytes = charCount;
+
+            if (totalBytes > ushort.MaxValue)
+                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
+
+            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
+            WriteUnchecked((ushort)totalBytes, 16);
+
+            if (totalBytes <= 256)
+            {
+                byte* buffer = stackalloc byte[totalBytes];
+                for (int i = 0; i < charCount; i++)
+                    buffer[i] = (byte)ptr[i];
+
+                WriteMemoryUnchecked(buffer, totalBytes);
+            }
+            else
+            {
+                byte* buffer = (byte*)Memory.Alloc(totalBytes);
+                try
+                {
+                    for (int i = 0; i < charCount; i++)
+                        buffer[i] = (byte)ptr[i];
+
+                    WriteMemoryUnchecked(buffer, totalBytes);
+                }
+                finally
+                {
+                    // Ensure we don't have a mem leak.
+                    Memory.Free(buffer);
+                }
+            }
+        }
+
+        private void WriteUTF16Internal(char* ptr, int charCount)
+        {
+            int totalBytes = charCount * 2;
+
+            if (totalBytes > ushort.MaxValue)
+                throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
+
+            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
+            WriteUnchecked((ushort)totalBytes, 16);
+
+            WriteMemoryUnchecked(ptr, totalBytes);
         }
 
 
@@ -234,15 +263,23 @@ namespace BitSerializer
         /// <summary>
         /// Reads a string from the <see cref="BitStreamer"/>.
         /// </summary>
-        public int ReadString(char[] destination, int offset, Encoding encoding)
+        public int ReadString(char[] destination, FastEncoding encoding)
         {
-            if ((uint)offset >= destination.Length)
-                throw new ArgumentOutOfRangeException("Offset exceeds array size.");
+            return ReadString(destination, 0, destination.Length, encoding);
+        }
+
+        public int ReadString(char[] destination, int offset, int length, FastEncoding encoding)
+        {
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+
+            if ((uint)offset + (uint)length > destination.Length)
+                throw new ArgumentOutOfRangeException("Offset and length exceed buffer.");
 
 
             fixed (char* ptr = &destination[offset])
             {
-                return ReadStringInternal(ptr, destination.Length - offset, encoding);
+                return ReadStringInternal(ptr, length, encoding);
             }
         }
 
@@ -250,14 +287,27 @@ namespace BitSerializer
         /// Reads a string from the <see cref="BitStreamer"/>.
         /// Reads a maximum of charLength or the original string length.
         /// </summary>
-        public int ReadString(char* ptr, int ptrLength, Encoding encoding)
+        public int ReadString(char* ptr, int ptrLength, FastEncoding encoding)
         {
+            if (ptr == null)
+                throw new ArgumentNullException(nameof(ptr));
+
             return ReadStringInternal(ptr, ptrLength, encoding);
         }
 
-        private int ReadStringInternal(char* str, int charLength, Encoding encoding)
+        private int ReadStringInternal(char* ptr, int ptrLength, FastEncoding encoding)
         {
-            const int BUFFERSIZE = 256;
+            if (ptrLength < 0)
+                throw new ArgumentOutOfRangeException(nameof(ptrLength));
+
+            if (encoding == FastEncoding.ASCII)
+                return ReadASCIIInternal(ptr, ptrLength);
+            else
+                return ReadUTF16Internal(ptr, ptrLength);
+        }
+
+        private int ReadASCIIInternal(char* str, int charLength)
+        {
             ushort byteSize = ReadUShort();
 
             if (byteSize == 0)
@@ -265,63 +315,49 @@ namespace BitSerializer
 
             EnsureReadSize(byteSize * 8);
 
-            // Fast route, use stackalloc for small strings.
-            if (byteSize <= BUFFERSIZE)
+            int toProcess = Math.Min(byteSize, charLength);
+
+            // Read memory in chunks of 8.
+            long c = toProcess >> 3; // longs
+            ulong buf = 0; byte* bbuf = (byte*)&buf;
+
+            int i = 0;
+            while (c > 0)
             {
-                byte* buffer = stackalloc byte[byteSize];
-                return DecodeString(buffer, byteSize, str, charLength, encoding);
+                buf = ReadUnchecked(64);
+
+                for (int j = 0; j < 8; j++)
+                    str[i++] = (char)bbuf[j];
+
+                c--;
             }
-            // Slow route, alloc mem for large strings.
-            else
-            {
-                byte* buffer = (byte*)Memory.Alloc(byteSize);
-                try
-                {
-                    return DecodeString(buffer, byteSize, str, charLength, encoding);
-                }
-                finally
-                {
-                    // Ensure we don't have a mem leak.
-                    Memory.Free(buffer);
-                }
-            }
+
+            // Read any remaining bytes.
+            while (i < toProcess)
+                str[i++] = (char)ReadUnchecked(8);
+
+            // Flush
+            Skip((byteSize - toProcess) << 3);
+
+            return toProcess;
         }
 
-        private int DecodeString(byte* buffer, int bufferSize, char* str, int maxChars, Encoding encoding)
+        private int ReadUTF16Internal(char* str, int charLength)
         {
-            ReadMemoryUnchecked(buffer, bufferSize);
+            ushort byteSize = ReadUShort();
 
-            int maxCharCount = encoding.GetMaxCharCount(bufferSize);
-            if (maxCharCount <= 128)
-            {
-                char* chrBuf = stackalloc char[maxCharCount];
-                return InnerDecode(chrBuf);
-            }
-            else
-            {
-                char* chrBuf = (char*)Memory.Alloc(maxCharCount * 2);
-                try
-                {
-                    return InnerDecode(chrBuf);
-                }
-                finally
-                {
-                    // Ensure we don't have a mem leak.
-                    Memory.Free(buffer);
-                }
-            }
+            if (byteSize == 0)
+                return 0;
 
-            int InnerDecode(char* chrBuf)
-            {
-                // Copy to temp buffer.
-                int charCount = encoding.GetChars(buffer, bufferSize, chrBuf, maxCharCount);
+            EnsureReadSize(byteSize * 8);
 
-                // Copy to destination buffer.
-                int charsToCopy = Math.Min(charCount, maxChars);
-                Memory.CopyMemory(chrBuf, str, charsToCopy * 2);
+            int toProcess = Math.Min(byteSize, charLength * 2);
+            ReadMemoryUnchecked(str, toProcess);
 
-                return charsToCopy;
-            }
+            // Flush
+            Skip((byteSize - toProcess) << 3);
+
+            return toProcess >> 1;
         }
 
 

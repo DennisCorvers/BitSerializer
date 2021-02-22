@@ -141,17 +141,6 @@ namespace BitSerializer.Bitstream
         }
 
         [Test]
-        public void ZeroesFailTest()
-        {
-            // This call is ignored.
-            m_stream.ResetWrite();
-            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Skip(-1); });
-
-            m_stream.ResetRead();
-            Assert.Throws<ArgumentOutOfRangeException>(() => { m_stream.Skip(-1); });
-        }
-
-        [Test]
         public void BuilderTest()
         {
             const uint uintVal = 598135039;

@@ -32,26 +32,26 @@ namespace Bench
             stream.ResetWrite(m_ptrBuf, SIZE);
 
             const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
-            stream.WriteString(str, Encoding.ASCII);
+            stream.WriteString(str, FastEncoding.ASCII);
 
             stream.ResetRead();
 
-            var replica = stream.ReadString(Encoding.ASCII);
+            var replica = stream.ReadString(FastEncoding.ASCII);
         }
 
         static char[] myString = new char[32];
 
-        [Benchmark]
+        //[Benchmark]
         public void UTF16Write()
         {
             stream.ResetWrite(m_ptrBuf, SIZE);
 
             const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
-            stream.WriteString(str, Encoding.ASCII);
+            stream.WriteString(str, FastEncoding.ASCII);
 
             stream.ResetRead();
 
-            var replica = stream.ReadString(myString, 0, Encoding.ASCII);
+            var replica = stream.ReadString(myString, FastEncoding.ASCII);
         }
     }
 }
