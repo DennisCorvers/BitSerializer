@@ -32,11 +32,11 @@ namespace Bench
             stream.ResetWrite(m_ptrBuf, SIZE);
 
             const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
-            stream.WriteString(str, FastEncoding.ASCII);
+            stream.WriteString(str, BitEncoding.ASCII);
 
             stream.ResetRead();
 
-            var replica = stream.ReadString(FastEncoding.ASCII);
+            var replica = stream.ReadString(BitEncoding.ASCII);
         }
 
         static char[] myString = new char[32];
@@ -47,11 +47,11 @@ namespace Bench
             stream.ResetWrite(m_ptrBuf, SIZE);
 
             const string str = "4Jzqh8Jb4DRlTHFjHZfAO6vRVBVLnHxEfY4Ir9lNkbRN00tn6dtRneKOKsss15PEIex";
-            stream.WriteString(str, FastEncoding.ASCII);
+            stream.WriteString(str, BitEncoding.ASCII);
 
             stream.ResetRead();
 
-            var replica = stream.ReadString(myString, FastEncoding.ASCII);
+            var replica = stream.ReadString(myString, BitEncoding.ASCII);
         }
     }
 }
