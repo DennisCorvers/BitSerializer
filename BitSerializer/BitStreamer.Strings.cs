@@ -102,22 +102,32 @@ namespace BitSerializer
 
         private string ReadASCIICompressed()
         {
-            const int BUFFERSIZE = 256;
-            ushort byteSize = ReadUShort();
+            ushort charCount = ReadUShort();
 
-            // Fast route, use stackalloc for small strings.
-            if (byteSize <= BUFFERSIZE)
+            var str = new string((char)0, charCount);
+            fixed (char* ptr = str)
             {
-                byte* buffer = stackalloc byte[byteSize];
-                for (int i = 0; i < byteSize; i++)
-                {
-                    buffer[i] = (byte)ReadUnchecked(7);
-                }
-
-                return new string((sbyte*)buffer, 0, byteSize);
+                for (int i = 0; i < charCount; i++)
+                    ptr[i] = (char)ReadUnchecked(7);
             }
 
-            throw new NotImplementedException();
+            return str;
+        }
+
+        private string ReadUTF16Fast()
+        {
+            // Uses a direct memory copy instead of encoding for increased performance.
+            ushort byteCount = ReadUShort();
+
+            EnsureReadSize(byteCount * 8);
+
+            var str = new string((char)0, byteCount >> 1);
+            fixed (char* ptr = str)
+            {
+                ReadMemoryUnchecked(ptr, byteCount);
+            }
+
+            return str;
         }
 
 
@@ -241,7 +251,8 @@ namespace BitSerializer
                 case BitEncoding.ASCIICompressed:
                     return ReadASCIICompressed();
             }
-            return ReadString(Encoding.Unicode);
+
+            return ReadUTF16Fast();
         }
 
         /// <summary>
