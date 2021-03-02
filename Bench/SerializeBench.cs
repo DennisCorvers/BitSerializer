@@ -66,7 +66,7 @@ namespace Bench
         }
 
         //[Benchmark]
-        public void BitRead()
+        public void BitStream()
         {
             BitStreamer stream = new BitStreamer();
             stream.ResetWrite(m_ptrBuf, SIZE, false);
@@ -134,40 +134,23 @@ namespace Bench
             }
         }
 
-        //[Benchmark]
-        public void VectorOld()
+        [Benchmark]
+        public void Vector()
         {
             BitStreamer stream = new BitStreamer();
             stream.ResetWrite(m_ptrBuf, SIZE, false);
             Vector2 v = new Vector2(123.321f, 8810283094.3241827391f);
 
-            for (int i = 0; i < 512; i++)
+            for (int i = 0; i < AMOUNT >> 2; i++)
             {
                 stream.WriteVector2(v);
             }
 
             stream.ResetRead();
-            for (int i = 0; i < 512; i++)
+            for (int i = 0; i < AMOUNT >> 2; i++)
             {
                 var vect = stream.ReadVector2();
             }
-        }
-
-        [Benchmark]
-        public void StringWrite()
-        {
-            BitStreamer stream = new BitStreamer();
-            stream.ResetWrite(m_ptrBuf, SIZE);
-
-            const string str = "TestString123";
-            Encoding enc = Encoding.Default;
-
-            for (int i = 0; i < 100; i++)
-            {
-                stream.WriteString(str, enc);
-            }
-
-            stream.ResetRead();
         }
     }
 }

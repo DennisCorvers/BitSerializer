@@ -458,5 +458,89 @@ namespace BitSerializer.Bitstream
 
             bs.Dispose();
         }
+
+        [Test]
+        public void ReadInvalidateTest()
+        {
+            BitStreamer bs = new BitStreamer(false);
+            IntPtr ptr = Memory.Alloc(4);
+
+            Assert.IsFalse(bs.ThrowsOnExceededBuffer);
+            Assert.IsFalse(bs.IsValid);
+
+            bs.ResetRead(ptr, 4);
+
+            Assert.IsTrue(bs.IsValid);
+
+            bs.ReadInt32();
+            Assert.IsTrue(bs.IsValid);
+
+            bs.ReadInt32();
+            Assert.IsFalse(bs.IsValid);
+
+            // Confirm offset hasn't increased.
+            Assert.AreEqual(4, bs.ByteOffset);
+
+            bs.ResetRead();
+            Assert.IsTrue(bs.IsValid);
+
+            Memory.Free(ptr);
+        }
+
+        [Test]
+        public void WriteInvalidateTest()
+        {
+            BitStreamer bs = new BitStreamer(false);
+            IntPtr ptr = Memory.Alloc(8);
+
+            Assert.IsFalse(bs.ThrowsOnExceededBuffer);
+            Assert.IsFalse(bs.IsValid);
+
+            bs.ResetWrite(ptr, 8);
+
+            Assert.IsTrue(bs.IsValid);
+
+            bs.WriteULong(123);
+            Assert.IsTrue(bs.IsValid);
+
+            bs.WriteInt32(321);
+            Assert.IsFalse(bs.IsValid);
+
+            // Confirm offset hasn't increased.
+            Assert.AreEqual(8, bs.ByteOffset);
+
+            bs.ResetWrite();
+            Assert.IsTrue(bs.IsValid);
+
+            Memory.Free(ptr);
+        }
+
+        [Test]
+        public void WriteResizeTest()
+        {
+            BitStreamer bs = new BitStreamer(false);
+
+            Assert.IsFalse(bs.ThrowsOnExceededBuffer);
+            Assert.IsFalse(bs.IsValid);
+
+            bs.ResetWrite(8);
+
+            Assert.IsTrue(bs.IsValid);
+
+            bs.WriteULong(123);
+            Assert.IsTrue(bs.IsValid);
+
+            Assert.AreEqual(8, bs.ByteLength);
+
+            bs.WriteInt32(321);
+            Assert.IsTrue(bs.IsValid);
+
+            Assert.AreEqual(16, bs.ByteLength);
+
+            // Confirm offset has increased.
+            Assert.AreEqual(12, bs.ByteOffset);
+
+            Assert.IsTrue(bs.IsValid);
+        }
     }
 }

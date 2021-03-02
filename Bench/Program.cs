@@ -9,7 +9,7 @@ namespace Bench
         static void Main(string[] args)
         {
             var config = DefaultConfig.Instance.With(ConfigOptions.DisableOptimizationsValidator);
-            BenchmarkRunner.Run<StringBench>(config);
+            BenchmarkRunner.Run<SerializeBench>(config);
             Console.ReadLine();
         }
     }

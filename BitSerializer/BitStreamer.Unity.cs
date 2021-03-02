@@ -9,50 +9,31 @@ namespace BitSerializer
         #region Float-Based Read      
         public Vector2 ReadVector2()
         {
-            EnsureReadSize(sizeof(float) * 8 * 2);
-
-            return new Vector2(
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked());
+            return new Vector2(ReadFloat(), ReadFloat());
         }
 
         public Vector3 ReadVector3()
         {
-            EnsureReadSize(sizeof(float) * 8 * 3);
-
-            return new Vector3(
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked());
+            return new Vector3(ReadFloat(), ReadFloat(), ReadFloat());
         }
 
         public Vector4 ReadVector4()
         {
-            EnsureReadSize(sizeof(float) * 8 * 4);
-
-            return new Vector4(
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked());
+            return new Vector4(ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
         }
 
         public Quaternion ReadQuaternion()
         {
-            EnsureReadSize(sizeof(float) * 8 * 4);
-
-            return new Quaternion(
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked(),
-                ReadFloatUnchecked());
+            return new Quaternion(ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
         }
 
 
         public Vector2 ReadVector2(float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision);
-            EnsureReadSize(numBits * 2);
+
+            if (!EnsureReadSize(numBits * 2))
+                return default;
 
             return new Vector2(
                 ReadFloatUnchecked(min, precision, numBits),
@@ -62,7 +43,9 @@ namespace BitSerializer
         public Vector3 ReadVector3(float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision);
-            EnsureReadSize(numBits * 3);
+
+            if (!EnsureReadSize(numBits * 3))
+                return default;
 
             return new Vector3(
                 ReadFloatUnchecked(min, precision, numBits),
@@ -73,7 +56,9 @@ namespace BitSerializer
         public Vector4 ReadVector4(float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision);
-            EnsureReadSize(numBits * 4);
+
+            if (!EnsureReadSize(numBits * 4))
+                return default;
 
             return new Vector4(
                 ReadFloatUnchecked(min, precision, numBits),
@@ -85,7 +70,9 @@ namespace BitSerializer
         public Quaternion ReadQuaternion(float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision);
-            EnsureReadSize(numBits * 4);
+
+            if (!EnsureReadSize(numBits * 4))
+                return default;
 
             return new Quaternion(
                 ReadFloatUnchecked(min, precision, numBits),
@@ -97,50 +84,30 @@ namespace BitSerializer
 
         public Vector2 ReadVector2Half()
         {
-            EnsureReadSize(sizeof(float) * 4 * 2);
-
-            return new Vector2(
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked());
+            return new Vector2(ReadHalf(), ReadHalf());
         }
 
         public Vector3 ReadVector3Half()
         {
-            EnsureReadSize(sizeof(float) * 4 * 3);
-
-            return new Vector3(
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked());
+            return new Vector3(ReadHalf(), ReadHalf(), ReadHalf());
         }
 
         public Vector4 ReadVector4Half()
         {
-            EnsureReadSize(sizeof(float) * 4 * 4);
-
-            return new Vector4(
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked());
+            return new Vector4(ReadHalf(), ReadHalf(), ReadHalf(), ReadHalf());
         }
 
         public Quaternion ReadQuaternionHalf()
         {
-            EnsureReadSize(sizeof(float) * 4 * 4);
-
-            return new Quaternion(
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked(),
-                ReadHalfUnchecked());
+            return new Quaternion(ReadHalf(), ReadHalf(), ReadHalf(), ReadHalf());
         }
         #endregion
 
         #region Int-Based Read
         public Vector2Int ReadVector2Int(int bitCount = 32)
         {
-            EnsureReadSize(bitCount * 2);
+            if (!EnsureReadSize(bitCount * 2))
+                return default;
 
             return new Vector2Int(
                 ReadIntUnchecked(bitCount),
@@ -149,7 +116,8 @@ namespace BitSerializer
 
         public Vector3Int ReadVector3Int(int bitCount = 32)
         {
-            EnsureReadSize(bitCount * 3);
+            if (!EnsureReadSize(bitCount * 3))
+                return default;
 
             return new Vector3Int(
                 ReadIntUnchecked(bitCount),
@@ -160,7 +128,9 @@ namespace BitSerializer
         public Vector2Int ReadVector2Int(int min, int max)
         {
             int numBits = MathUtils.BitsRequired(min, max);
-            EnsureReadSize(numBits * 2);
+
+            if (!EnsureReadSize(numBits * 2))
+                return default;
 
             return new Vector2Int(
                 ReadIntUnchecked(min, numBits),
@@ -170,7 +140,9 @@ namespace BitSerializer
         public Vector3Int ReadVector3Int(int min, int max)
         {
             int numBits = MathUtils.BitsRequired(min, max);
-            EnsureReadSize(numBits * 3);
+
+            if (!EnsureReadSize(numBits * 3))
+                return default;
 
             return new Vector3Int(
                 ReadIntUnchecked(min, numBits),
@@ -182,45 +154,37 @@ namespace BitSerializer
         #region Float-Based Write
         public BitStreamer WriteVector2(Vector2 value)
         {
-            EnsureWriteSize(sizeof(float) * 8 * 2);
-
-            WriteFloatUnchecked(value.x);
-            WriteFloatUnchecked(value.y);
+            WriteFloat(value.x);
+            WriteFloat(value.y);
 
             return this;
         }
 
         public BitStreamer WriteVector3(Vector3 value)
         {
-            EnsureWriteSize(sizeof(float) * 8 * 3);
-
-            WriteFloatUnchecked(value.x);
-            WriteFloatUnchecked(value.y);
-            WriteFloatUnchecked(value.z);
+            WriteFloat(value.x);
+            WriteFloat(value.y);
+            WriteFloat(value.z);
 
             return this;
         }
 
         public BitStreamer WriteVector4(Vector4 value)
         {
-            EnsureWriteSize(sizeof(float) * 8 * 4);
-
-            WriteFloatUnchecked(value.x);
-            WriteFloatUnchecked(value.y);
-            WriteFloatUnchecked(value.z);
-            WriteFloatUnchecked(value.w);
+            WriteFloat(value.x);
+            WriteFloat(value.y);
+            WriteFloat(value.z);
+            WriteFloat(value.w);
 
             return this;
         }
 
         public BitStreamer WriteQuaternion(Quaternion value)
         {
-            EnsureWriteSize(sizeof(float) * 8 * 4);
-
-            WriteFloatUnchecked(value.x);
-            WriteFloatUnchecked(value.y);
-            WriteFloatUnchecked(value.z);
-            WriteFloatUnchecked(value.w);
+            WriteFloat(value.x);
+            WriteFloat(value.y);
+            WriteFloat(value.z);
+            WriteFloat(value.w);
 
             return this;
         }
@@ -229,10 +193,12 @@ namespace BitSerializer
         public BitStreamer WriteVector2(Vector2 value, float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision, out float inv);
-            EnsureWriteSize(numBits * 2);
 
-            WriteFloatUnchecked(value.x, min, inv, numBits);
-            WriteFloatUnchecked(value.y, min, inv, numBits);
+            if (EnsureWriteSize(numBits * 2))
+            {
+                WriteFloatUnchecked(value.x, min, inv, numBits);
+                WriteFloatUnchecked(value.y, min, inv, numBits);
+            }
 
             return this;
         }
@@ -240,11 +206,13 @@ namespace BitSerializer
         public BitStreamer WriteVector3(Vector3 value, float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision, out float inv);
-            EnsureWriteSize(numBits * 3);
 
-            WriteFloatUnchecked(value.x, min, inv, numBits);
-            WriteFloatUnchecked(value.y, min, inv, numBits);
-            WriteFloatUnchecked(value.z, min, inv, numBits);
+            if (EnsureWriteSize(numBits * 3))
+            {
+                WriteFloatUnchecked(value.x, min, inv, numBits);
+                WriteFloatUnchecked(value.y, min, inv, numBits);
+                WriteFloatUnchecked(value.z, min, inv, numBits);
+            }
 
             return this;
         }
@@ -252,12 +220,14 @@ namespace BitSerializer
         public BitStreamer WriteVector4(Vector4 value, float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision, out float inv);
-            EnsureWriteSize(numBits * 4);
 
-            WriteFloatUnchecked(value.x, min, inv, numBits);
-            WriteFloatUnchecked(value.y, min, inv, numBits);
-            WriteFloatUnchecked(value.z, min, inv, numBits);
-            WriteFloatUnchecked(value.w, min, inv, numBits);
+            if (EnsureWriteSize(numBits * 4))
+            {
+                WriteFloatUnchecked(value.x, min, inv, numBits);
+                WriteFloatUnchecked(value.y, min, inv, numBits);
+                WriteFloatUnchecked(value.z, min, inv, numBits);
+                WriteFloatUnchecked(value.w, min, inv, numBits);
+            }
 
             return this;
         }
@@ -265,12 +235,14 @@ namespace BitSerializer
         public BitStreamer WriteQuaternion(Quaternion value, float min, float max, float precision)
         {
             int numBits = MathUtils.BitsRequired(min, max, precision, out float inv);
-            EnsureWriteSize(numBits * 4);
 
-            WriteFloatUnchecked(value.x, min, inv, numBits);
-            WriteFloatUnchecked(value.y, min, inv, numBits);
-            WriteFloatUnchecked(value.z, min, inv, numBits);
-            WriteFloatUnchecked(value.w, min, inv, numBits);
+            if (EnsureWriteSize(numBits * 4))
+            {
+                WriteFloatUnchecked(value.x, min, inv, numBits);
+                WriteFloatUnchecked(value.y, min, inv, numBits);
+                WriteFloatUnchecked(value.z, min, inv, numBits);
+                WriteFloatUnchecked(value.w, min, inv, numBits);
+            }
 
             return this;
         }
@@ -278,45 +250,37 @@ namespace BitSerializer
 
         public BitStreamer WriteVector2Half(Vector2 value)
         {
-            EnsureWriteSize(sizeof(float) * 4 * 2);
-
-            WriteHalfUnchecked(value.x);
-            WriteHalfUnchecked(value.y);
+            WriteHalf(value.x);
+            WriteHalf(value.y);
 
             return this;
         }
 
         public BitStreamer WriteVector3Half(Vector3 value)
         {
-            EnsureWriteSize(sizeof(float) * 4 * 3);
-
-            WriteHalfUnchecked(value.x);
-            WriteHalfUnchecked(value.y);
-            WriteHalfUnchecked(value.z);
+            WriteHalf(value.x);
+            WriteHalf(value.y);
+            WriteHalf(value.z);
 
             return this;
         }
 
         public BitStreamer WriteVector4Half(Vector4 value)
         {
-            EnsureWriteSize(sizeof(float) * 4 * 4);
-
-            WriteHalfUnchecked(value.x);
-            WriteHalfUnchecked(value.y);
-            WriteHalfUnchecked(value.z);
-            WriteHalfUnchecked(value.w);
+            WriteHalf(value.x);
+            WriteHalf(value.y);
+            WriteHalf(value.z);
+            WriteHalf(value.w);
 
             return this;
         }
 
         public BitStreamer WriteQuaternionHalf(Quaternion value)
         {
-            EnsureWriteSize(sizeof(float) * 4 * 4);
-
-            WriteHalfUnchecked(value.x);
-            WriteHalfUnchecked(value.y);
-            WriteHalfUnchecked(value.z);
-            WriteHalfUnchecked(value.w);
+            WriteHalf(value.x);
+            WriteHalf(value.y);
+            WriteHalf(value.z);
+            WriteHalf(value.w);
 
             return this;
         }
@@ -325,21 +289,23 @@ namespace BitSerializer
         #region Int-Based Write
         public BitStreamer WriteVector2Int(Vector2Int value, int bitCount = 32)
         {
-            EnsureWriteSize(bitCount * 2);
-
-            WriteIntUnchecked(value.x, bitCount);
-            WriteIntUnchecked(value.y, bitCount);
+            if (EnsureWriteSize(bitCount * 2))
+            {
+                WriteIntUnchecked(value.x, bitCount);
+                WriteIntUnchecked(value.y, bitCount);
+            }
 
             return this;
         }
 
         public BitStreamer WriteVector3Int(Vector3Int value, int bitCount = 32)
         {
-            EnsureWriteSize(bitCount * 3);
-
-            WriteIntUnchecked(value.x, bitCount);
-            WriteIntUnchecked(value.y, bitCount);
-            WriteIntUnchecked(value.z, bitCount);
+            if (EnsureWriteSize(bitCount * 3))
+            {
+                WriteIntUnchecked(value.x, bitCount);
+                WriteIntUnchecked(value.y, bitCount);
+                WriteIntUnchecked(value.z, bitCount);
+            }
 
             return this;
         }
@@ -347,10 +313,12 @@ namespace BitSerializer
         public BitStreamer WriteVector2Int(Vector2Int value, int min, int max)
         {
             int numBits = MathUtils.BitsRequired(min, max);
-            EnsureWriteSize(numBits * 2);
 
-            WriteIntUnchecked(value.x, min, numBits);
-            WriteIntUnchecked(value.y, min, numBits);
+            if (EnsureWriteSize(numBits * 2))
+            {
+                WriteIntUnchecked(value.x, min, numBits);
+                WriteIntUnchecked(value.y, min, numBits);
+            }
 
             return this;
         }
@@ -358,11 +326,13 @@ namespace BitSerializer
         public BitStreamer WriteVector3Int(Vector3Int value, int min, int max)
         {
             int numBits = MathUtils.BitsRequired(min, max);
-            EnsureWriteSize(numBits * 3);
 
-            WriteIntUnchecked(value.x, min, numBits);
-            WriteIntUnchecked(value.y, min, numBits);
-            WriteIntUnchecked(value.z, min, numBits);
+            if (EnsureWriteSize(numBits * 3))
+            {
+                WriteIntUnchecked(value.x, min, numBits);
+                WriteIntUnchecked(value.y, min, numBits);
+                WriteIntUnchecked(value.z, min, numBits);
+            }
 
             return this;
         }
@@ -520,5 +490,43 @@ namespace BitSerializer
             else value = ReadVector3Int(min, max);
             return this;
         }
+
+        #region Unchecked Operations
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float ReadFloatUnchecked(float min, float precision, int bits)
+        {
+            return ReadUnchecked(bits) * precision + min;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int ReadIntUnchecked(int bitCount = 32)
+        {
+            return ZigZag.Zag(unchecked((uint)ReadUnchecked(bitCount)));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int ReadIntUnchecked(int min, int bits)
+        {
+            return unchecked((int)((long)ReadUnchecked(bits) + min));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteFloatUnchecked(float value, float min, float inv, int bits)
+        {
+            float adjusted = (value - min) * inv;
+
+            WriteUnchecked((uint)(adjusted + 0.5f), bits);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteIntUnchecked(int value, int bitCount = 32)
+        {
+            WriteUnchecked(ZigZag.Zig(value), bitCount);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteIntUnchecked(int value, int min, int bits)
+        {
+            WriteUnchecked((ulong)(value - min), bits);
+        }
+        #endregion
     }
 }

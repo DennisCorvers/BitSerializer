@@ -34,7 +34,9 @@ namespace BitSerializer
             if (byteSize > ushort.MaxValue)
                 throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
 
-            EnsureWriteSize((byteSize + sizeof(ushort)) * 8);
+            // Abort when the buffer doesn't have the required space.
+            if (!EnsureWriteSize((byteSize + sizeof(ushort)) * 8))
+                return;
 
             // Write the length of the string in bytes.
             WriteUnchecked((ushort)byteSize, 16);
@@ -74,7 +76,8 @@ namespace BitSerializer
             if (byteSize == 0)
                 return string.Empty;
 
-            EnsureReadSize(byteSize * 8);
+            if (!EnsureReadSize(byteSize * 8))
+                return string.Empty;
 
             // Fast route, use stackalloc for small strings.
             if (byteSize <= BUFFERSIZE)
@@ -119,7 +122,8 @@ namespace BitSerializer
             // Uses a direct memory copy instead of encoding for increased performance.
             ushort byteCount = ReadUShort();
 
-            EnsureReadSize(byteCount * 8);
+            if (!EnsureReadSize(byteCount * 8))
+                return string.Empty;
 
             var str = new string((char)0, byteCount >> 1);
             fixed (char* ptr = str)
@@ -220,11 +224,14 @@ namespace BitSerializer
                 throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
 
             int size = compressed ? 7 : 8;
-            EnsureWriteSize(((charCount * size) + sizeof(ushort)) * 8);
-            WriteUnchecked((ushort)charCount, 16);
 
-            for (int i = 0; i < charCount; i++)
-                WriteUnchecked((byte)ptr[i], size);
+            if (EnsureWriteSize(((charCount * size) + sizeof(ushort)) * 8))
+            {
+                WriteUnchecked((ushort)charCount, 16);
+
+                for (int i = 0; i < charCount; i++)
+                    WriteUnchecked((byte)ptr[i], size);
+            }
         }
 
         private void WriteUTF16Internal(char* ptr, int charCount)
@@ -234,10 +241,12 @@ namespace BitSerializer
             if (totalBytes > ushort.MaxValue)
                 throw new ArgumentOutOfRangeException("value", "String is too large to be written.");
 
-            EnsureWriteSize((totalBytes + sizeof(ushort)) * 8);
-            WriteUnchecked((ushort)totalBytes, 16);
+            if (EnsureWriteSize((totalBytes + sizeof(ushort)) * 8))
+            {
+                WriteUnchecked((ushort)totalBytes, 16);
 
-            WriteMemoryUnchecked(ptr, totalBytes);
+                WriteMemoryUnchecked(ptr, totalBytes);
+            }
         }
 
 
@@ -315,7 +324,8 @@ namespace BitSerializer
             if (charCount == 0)
                 return 0;
 
-            EnsureReadSize(charCount * charSize);
+            if (!EnsureReadSize(charCount * charSize))
+                return 0;
 
             int toProcess = Math.Min(charCount, charLength);
 
@@ -335,7 +345,8 @@ namespace BitSerializer
             if (byteSize == 0)
                 return 0;
 
-            EnsureReadSize(byteSize * 8);
+            if (!EnsureReadSize(byteSize * 8))
+                return 0;
 
             int toProcess = Math.Min(byteSize, charLength * 2);
             ReadMemoryUnchecked(str, toProcess);
