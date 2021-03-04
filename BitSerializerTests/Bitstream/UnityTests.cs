@@ -2,15 +2,15 @@
 using BitSerializer.Utils;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+#if UNITY
 using UnityEngine;
+#endif
 
 namespace BitSerializerTests.Bitstream
 {
     public class UnityTests
     {
+#if UNITY
         private BitStreamer stream = new BitStreamer();
         private System.Random rnd = new System.Random();
 
@@ -320,6 +320,7 @@ namespace BitSerializerTests.Bitstream
             Assert.AreEqual(a.z, b.z, delta);
             Assert.AreEqual(a.w, b.w, delta);
         }
+#endif
     }
 
     internal static unsafe class RandomExtension

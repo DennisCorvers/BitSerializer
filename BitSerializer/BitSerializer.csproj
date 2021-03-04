@@ -16,6 +16,7 @@
     <AssemblyName>BitSerializer</AssemblyName>
     <RootNamespace>BitSerializer</RootNamespace>
     <Configurations>Debug;Release;Unity</Configurations>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

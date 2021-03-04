@@ -1,6 +1,7 @@
 ﻿using System;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
+using BitSerializer;
 
 namespace Bench
 {
@@ -8,8 +9,7 @@ namespace Bench
     {
         static void Main(string[] args)
         {
-            var config = DefaultConfig.Instance.With(ConfigOptions.DisableOptimizationsValidator);
-            BenchmarkRunner.Run<SerializeBench>(config);
+            BenchmarkRunner.Run<SerializeBench>();
             Console.ReadLine();
         }
     }
