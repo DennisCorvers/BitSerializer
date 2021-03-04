@@ -520,8 +520,6 @@ namespace BitSerializer
         /// <summary>
         /// Writes a value without increasing the offset.
         /// </summary>
-        /// <param name="bits"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InternalWrite(ulong value, int bits)
         {

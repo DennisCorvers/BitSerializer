@@ -25,11 +25,16 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>D:\Projects\VS Projects\BitStream\BitSerializer\BitSerializer.xml</DocumentationFile>
+    <NoWarn>1701;1702;CS1591;CS1573</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unity|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>TRACE;UNITY</DefineConstants>
+    <DocumentationFile>D:\Projects\VS Projects\BitStream\BitSerializer\BitSerializer.xml</DocumentationFile>
+    <NoWarn>1701;1702;CS1591;CS1573</NoWarn>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

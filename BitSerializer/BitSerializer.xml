@@ -1,0 +1,404 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BitSerializer</name>
+    </assembly>
+    <members>
+        <member name="F:BitSerializer.BitEncoding.ASCII">
+            <summary>
+            1-byte ASCII encoding.
+            </summary>
+        </member>
+        <member name="F:BitSerializer.BitEncoding.UTF16">
+            <summary>
+            2-byte UTF16 (Default C#) encoding.
+            </summary>
+        </member>
+        <member name="F:BitSerializer.BitEncoding.ASCIICompressed">
+            <summary>
+            7-bit ASCII encoding.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadBlit``1(``0*)">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadBlit``1">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteBlit``1(``0)">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteBlit``1(``0*)">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.SerializeBlit``1(``0@)">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.SerializeBlit``1(``0*)">
+            <summary>
+            Only use this with types that have a strict layout!
+            </summary>
+        </member>
+        <member name="F:BitSerializer.BitStreamer.m_fullBitLength">
+            <summary>
+            The entire bit size of the buffer.
+            </summary>
+        </member>
+        <member name="F:BitSerializer.BitStreamer.m_bitWriteLength">
+            <summary>
+            Bit size of the buffer rounded down to the nearest multiple of 8.
+            This is to prevent overwriting memory that isn't ours.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.#ctor">
+            <summary>
+            Creates a new instance of <see cref="T:BitSerializer.BitStreamer"/>
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.#ctor(System.Boolean)">
+            <summary>
+            Creates a new instance of <see cref="T:BitSerializer.BitStreamer"/>
+            </summary>
+            <param name="shouldThrow">When TRUE, exceeding the buffer throws an exception instead.</param>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.BitOffset">
+            <summary>
+            The current <see cref="T:BitSerializer.BitStreamer"/> offset in bits.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.ByteOffset">
+            <summary>
+            The current <see cref="T:BitSerializer.BitStreamer"/> offset in bytes.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.BytesUsed">
+            <summary>
+            The amount of bytes occupied by the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.BitLength">
+            <summary>
+            The total <see cref="T:BitSerializer.BitStreamer"/> length in bits.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.ByteLength">
+            <summary>
+            The total <see cref="T:BitSerializer.BitStreamer"/> length in bytes.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.Mode">
+            <summary>
+            The current streaming mode.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.IsWriting">
+            <summary>
+            Determines if the <see cref="T:BitSerializer.BitStreamer"/> is writing.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.IsReading">
+            <summary>
+            Determines if the <see cref="T:BitSerializer.BitStreamer"/> is reading.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.Buffer">
+            <summary>
+            The inner buffer used by the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.OwnsBuffer">
+            <summary>
+            TRUE if this <see cref="T:BitSerializer.BitStreamer"/> has allocated its own buffer.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.ThrowsOnExceededBuffer">
+            <summary>
+            Determines if the <see cref="T:BitSerializer.BitStreamer"/> throws an exception when the inner buffer bounds are exceeded.
+            </summary>
+        </member>
+        <member name="P:BitSerializer.BitStreamer.IsValid">
+            <summary>
+            Returns FALSE when the inner buffer bounds have been exceeded.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetRead">
+            <summary>
+            Resets <see cref="T:BitSerializer.BitStreamer"/> for reading (reads what was written so far).
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetRead(System.Byte[])">
+            <summary>
+            Resets <see cref="T:BitSerializer.BitStreamer"/> for reading and copies data.
+            Allocates a new inner buffer!
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetRead(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Copies the buffer for reading.
+            </summary>
+            <param name="data">The buffer to read from</param>
+            <param name="length">The length of the buffer in bytes</param>
+            <param name="offset">The offset where to start reading</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetRead(System.IntPtr,System.Int32)">
+            <summary>
+            Uses the supplied buffer for reading.
+            </summary>
+            <param name="buffer">The buffer to read from</param>
+            <param name="length">The length of the buffer in bytes</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetRead(System.IntPtr,System.Int32,System.Boolean)">
+            <summary>
+            Copies the buffer for reading.
+            </summary>
+            <param name="buffer">The buffer to read from</param>
+            <param name="length">The length of the buffer in bytes</param>
+            <param name="copy">True to allocate and copy to the inner buffer</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetWrite">
+            <summary>
+            Resets the <see cref="T:BitSerializer.BitStreamer"/> for writing,
+            Allocates a new buffer is none is yet allocated.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetWrite(System.Int32)">
+            <summary>
+            Resets the <see cref="T:BitSerializer.BitStreamer"/> for writing.
+            Allocates a new buffer!
+            </summary>
+            <param name="length">The length of the buffer to allocate in bytes.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetWrite(System.IntPtr,System.Int32)">
+            <summary>
+            Resets the <see cref="T:BitSerializer.BitStreamer"/> for writing using an existing buffer.
+            Length will be rounded down to a multiple of 8.
+            </summary>
+            <param name="buffer">The buffer to write to</param>
+            <param name="length">The length of the supplied buffer</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ResetWrite(System.IntPtr,System.Int32,System.Boolean)">
+            <summary>
+            Resets the <see cref="T:BitSerializer.BitStreamer"/> for writing using an existing buffer.
+            Length will be rounded down to a multiple of 8.
+            </summary>
+            <param name="buffer">The buffer to write to</param>
+            <param name="length">The length of the supplied buffer</param>
+            <param name="copy">Appends the supplied buffer at the front of the<see cref="T:BitSerializer.BitStreamer"/>.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReserveSizePrefix">
+            <summary>
+            Reserves 4 bytes at the front of the <see cref="T:BitSerializer.BitStreamer"/> so that the size can be written later.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.PrefixSize">
+            <summary>
+            Prefixes the <see cref="T:BitSerializer.BitStreamer"/> with the total size of this <see cref="T:BitSerializer.BitStreamer"/>.
+            Overwrites any data that might be in the first 32 bits.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.Skip(System.Int32)">
+            <summary>
+            Skips a certain number of bits. Writes 0 bits when in write-mode.
+            </summary>
+            <param name="bitCount">Amount of bits to skip</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.DeallocateInnerBuffer">
+            <summary>
+            Deallocates the buffer currently in use.
+            Uses Memory.Dealloc
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadUnchecked(System.Int32)">
+            <summary>
+            Reads a value without ensuring the buffer size.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteUnchecked(System.UInt64,System.Int32)">
+            <summary>
+            Writes a value without ensuring the buffer size.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.InternalPeek(System.Int32)">
+            <summary>
+            Reads a value without increasing the offset.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.InternalWrite(System.UInt64,System.Int32)">
+            <summary>
+            Writes a value without increasing the offset.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteMemory(System.IntPtr,System.Int32)">
+            <summary>
+            Writes raw data to the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteMemory(System.Void*,System.Int32)">
+            <summary>
+            Writes raw data to the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadMemory(System.IntPtr,System.Int32)">
+            <summary>
+            Reads raw data from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadMemory(System.Void*,System.Int32)">
+            <summary>
+            Reads raw data from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteBytes(System.Byte[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Writes bytes to the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadBytes">
+            <summary>
+            Reads an array of bytes from the <see cref="T:BitSerializer.BitStreamer"/>.
+            Length is automatically retrieved as an uint16.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadBytes(System.Int32)">
+            <summary>
+            Reads an array of bytes from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+            <param name="count">The amount of bytes to read.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadBytes(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Byte[])">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="buffer">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Byte[],System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="buffer">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="buffer">The destination for the data.</param>
+            <param name="length">The total length to copy (starting from 0)</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr,System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr,System.Int32,System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+            <param name="length">The total length to copy (starting from 0)</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*,System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*,System.Int32,System.Int32)">
+            <summary>
+            Copies the inner buffer to a supplied buffer.
+            </summary>
+            <param name="ptr">The destination for the data.</param>
+            <param name="length">The total length to copy (starting from 0)</param>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteString(System.String,System.Text.Encoding)">
+            <summary>
+            Writes a string to the <see cref="T:BitSerializer.BitStreamer"/>. 
+            Includes the bytesize as an uint16.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadString(System.Text.Encoding)">
+            <summary>
+            Reads a string from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteString(System.String,BitSerializer.BitEncoding)">
+            <summary>
+            Writes a string to the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteString(System.Char[],BitSerializer.BitEncoding)">
+            <summary>
+            Writes a string to the <see cref="T:BitSerializer.BitStreamer"/>. 
+            Includes the bytesize as an uint16.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.WriteString(System.Char*,System.Int32,BitSerializer.BitEncoding)">
+            <summary>
+            Writes a string to the <see cref="T:BitSerializer.BitStreamer"/>. 
+            Includes the bytesize as an uint16.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadString(System.Char[],BitSerializer.BitEncoding)">
+            <summary>
+            Reads a string from the <see cref="T:BitSerializer.BitStreamer"/>.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.BitStreamer.ReadString(System.Char*,System.Int32,BitSerializer.BitEncoding)">
+            <summary>
+            Reads a string from the <see cref="T:BitSerializer.BitStreamer"/>.
+            Reads a maximum of charLength or the original string length.
+            </summary>
+        </member>
+        <member name="M:BitSerializer.Utils.MathUtils.NormalizeFloat(System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+            Normalizes uniform-spaced float within min/max into uint with specified number of bits.
+            This does not preserve 0 when min = -max
+            </summary>
+        </member>
+        <member name="M:BitSerializer.Utils.MathUtils.DenormalizeFloat(System.UInt32,System.Single,System.Single,System.Int32)">
+            <summary>
+            Denormalizes uint with specified number of bits into uniform-space float within min/max.
+            This does not preserve 0 when min = -max
+            </summary>
+        </member>
+        <member name="M:BitSerializer.Utils.MathUtils.NormalizeFloatCenter(System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+            Normalizes uniform-spaced float within min/max into uint with specified number of bits.
+            This preserves 0 when min = -max
+            </summary>
+        </member>
+        <member name="M:BitSerializer.Utils.MathUtils.DenormalizeFloatCenter(System.UInt32,System.Single,System.Single,System.Int32)">
+            <summary>
+            Denormalizes uint with specified number of bits into uniform-space float within min/max.
+            This preserves 0 when min = -max
+            </summary>
+        </member>
+    </members>
+</doc>

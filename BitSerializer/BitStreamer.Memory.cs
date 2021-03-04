@@ -205,7 +205,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         public void CopyTo(IntPtr ptr)
         {
             CopyTo(ptr, 0, BytesUsed);
@@ -214,7 +214,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         public void CopyTo(IntPtr ptr, int destinationIndex)
         {
             CopyTo(ptr, destinationIndex, BytesUsed);
@@ -223,7 +223,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         /// <param name="length">The total length to copy (starting from 0)</param>
         public void CopyTo(IntPtr ptr, int destinationIndex, int length)
         {
@@ -240,7 +240,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         public void CopyTo(void* ptr)
         {
             CopyTo(ptr, 0, BytesUsed);
@@ -249,7 +249,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         public void CopyTo(void* ptr, int destinationIndex)
         {
             CopyTo(ptr, destinationIndex, BytesUsed);
@@ -258,7 +258,7 @@ namespace BitSerializer
         /// <summary>
         /// Copies the inner buffer to a supplied buffer.
         /// </summary>
-        /// <param name="buffer">The destination for the data.</param>
+        /// <param name="ptr">The destination for the data.</param>
         /// <param name="length">The total length to copy (starting from 0)</param>
         public void CopyTo(void* ptr, int destinationIndex, int length)
         {
