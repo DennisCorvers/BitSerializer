@@ -107,7 +107,7 @@ namespace BitSerializer.Bitstream
             { m_stream.WriteByte((byte)(value * (i + 1))); }
 
             byte* buff = (byte*)Marshal.AllocHGlobal(4);
-            m_stream.CopyTo(buff);
+            m_stream.CopyTo((IntPtr)buff, 4);
 
             for (int i = 0; i < 4; i++)
             { Assert.AreEqual(buff[i], (byte)(value * (i + 1))); }

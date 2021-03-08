@@ -299,38 +299,7 @@
             <param name="buffer">The destination for the data.</param>
             <param name="length">The total length to copy (starting from 0)</param>
         </member>
-        <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr)">
-            <summary>
-            Copies the inner buffer to a supplied buffer.
-            </summary>
-            <param name="ptr">The destination for the data.</param>
-        </member>
         <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr,System.Int32)">
-            <summary>
-            Copies the inner buffer to a supplied buffer.
-            </summary>
-            <param name="ptr">The destination for the data.</param>
-        </member>
-        <member name="M:BitSerializer.BitStreamer.CopyTo(System.IntPtr,System.Int32,System.Int32)">
-            <summary>
-            Copies the inner buffer to a supplied buffer.
-            </summary>
-            <param name="ptr">The destination for the data.</param>
-            <param name="length">The total length to copy (starting from 0)</param>
-        </member>
-        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*)">
-            <summary>
-            Copies the inner buffer to a supplied buffer.
-            </summary>
-            <param name="ptr">The destination for the data.</param>
-        </member>
-        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*,System.Int32)">
-            <summary>
-            Copies the inner buffer to a supplied buffer.
-            </summary>
-            <param name="ptr">The destination for the data.</param>
-        </member>
-        <member name="M:BitSerializer.BitStreamer.CopyTo(System.Void*,System.Int32,System.Int32)">
             <summary>
             Copies the inner buffer to a supplied buffer.
             </summary>

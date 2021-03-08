@@ -198,26 +198,7 @@ namespace BitSerializer
             if ((uint)destinationIndex + (uint)length > buffer.Length)
                 throw new ArgumentOutOfRangeException("DestinationIndex and length exceed array size");
 
-            Memory.CopyMemory(new IntPtr(m_buffer), 0, buffer, destinationIndex, Math.Min(length, BytesUsed));
-        }
-
-
-        /// <summary>
-        /// Copies the inner buffer to a supplied buffer.
-        /// </summary>
-        /// <param name="ptr">The destination for the data.</param>
-        public void CopyTo(IntPtr ptr)
-        {
-            CopyTo(ptr, 0, BytesUsed);
-        }
-
-        /// <summary>
-        /// Copies the inner buffer to a supplied buffer.
-        /// </summary>
-        /// <param name="ptr">The destination for the data.</param>
-        public void CopyTo(IntPtr ptr, int destinationIndex)
-        {
-            CopyTo(ptr, destinationIndex, BytesUsed);
+            Memory.CopyMemory((IntPtr)m_buffer, buffer, destinationIndex, Math.Min(length, BytesUsed));
         }
 
         /// <summary>
@@ -225,50 +206,12 @@ namespace BitSerializer
         /// </summary>
         /// <param name="ptr">The destination for the data.</param>
         /// <param name="length">The total length to copy (starting from 0)</param>
-        public void CopyTo(IntPtr ptr, int destinationIndex, int length)
+        public void CopyTo(IntPtr ptr, int length)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            if ((uint)destinationIndex > (uint)length)
-                throw new ArgumentOutOfRangeException("Length must be smaller than DestinationIndex");
-
-            Memory.CopyMemory(new IntPtr(m_buffer), 0, ptr, destinationIndex, Math.Min(length, BytesUsed));
-        }
-
-
-        /// <summary>
-        /// Copies the inner buffer to a supplied buffer.
-        /// </summary>
-        /// <param name="ptr">The destination for the data.</param>
-        public void CopyTo(void* ptr)
-        {
-            CopyTo(ptr, 0, BytesUsed);
-        }
-
-        /// <summary>
-        /// Copies the inner buffer to a supplied buffer.
-        /// </summary>
-        /// <param name="ptr">The destination for the data.</param>
-        public void CopyTo(void* ptr, int destinationIndex)
-        {
-            CopyTo(ptr, destinationIndex, BytesUsed);
-        }
-
-        /// <summary>
-        /// Copies the inner buffer to a supplied buffer.
-        /// </summary>
-        /// <param name="ptr">The destination for the data.</param>
-        /// <param name="length">The total length to copy (starting from 0)</param>
-        public void CopyTo(void* ptr, int destinationIndex, int length)
-        {
-            if (ptr == null)
-                throw new ArgumentNullException(nameof(ptr));
-
-            if ((uint)destinationIndex > (uint)length)
-                throw new ArgumentOutOfRangeException("Length must be smaller than DestinationIndex");
-
-            Memory.CopyMemory(m_buffer, 0, ptr, destinationIndex, Math.Min(length, BytesUsed));
+            Memory.CopyMemory(m_buffer, (void*)ptr, Math.Min(length, BytesUsed));
         }
     }
 }

@@ -102,47 +102,28 @@ namespace BitSerializer.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyMemory(void* source, int sourceIndex, void* destination, int destinationIndex, int length)
+        public unsafe static void CopyMemory(byte[] source, int sourceIndex, IntPtr destination, int length)
         {
 #if UNITY
-            UnsafeUtility.MemCpy((byte*)destination + destinationIndex, (byte*)source + sourceIndex, length);
-#else
-            Buffer.MemoryCopy(
-                (byte*)source + sourceIndex,
-                (byte*)destination + destinationIndex,
-                length, length);
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyMemory(IntPtr source, int sourceIndex, IntPtr destination, int destinationIndex, int length)
-        {
-            CopyMemory((void*)source, sourceIndex, (void*)destination, destinationIndex, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyMemory(byte[] source, int sourceIndex, IntPtr destination, int destinationIndex, int length)
-        {
-#if UNITY
-            fixed (byte* ptr = source)
+            fixed (byte* ptr = &source[sourceIndex])
             {
-                CopyMemory(ptr, sourceIndex, (void*)destination, destinationIndex, length);
+                CopyMemory(ptr, (void*)destination, length);
             }
 #else
-            Marshal.Copy(source, sourceIndex, destination + destinationIndex, length);
+            Marshal.Copy(source, sourceIndex, destination, length);
 #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void CopyMemory(IntPtr source, int sourceIndex, byte[] destination, int destinationIndex, int length)
+        public unsafe static void CopyMemory(IntPtr source, byte[] destination, int destinationIndex, int length)
         {
 #if UNITY
             fixed (byte* ptr = &destination[destinationIndex])
             {
-                CopyMemory((void*)source, sourceIndex, ptr, destinationIndex, length);
+                CopyMemory((void*)source, ptr, length);
             }
 #else
-            Marshal.Copy(source + sourceIndex, destination, destinationIndex, length);
+            Marshal.Copy(source, destination, destinationIndex, length);
 #endif
         }
     }
