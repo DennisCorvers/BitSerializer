@@ -588,8 +588,11 @@ namespace BitSerializer
 
             int newBitSize = Math.Max(m_fullBitLength * 2, bufferBitSize);
             int newByteSize = MathUtils.GetNextMultipleOf8(newBitSize >> 3);
+            int oldByteSize = m_fullBitLength >> 3;
 
-            m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, m_fullBitLength >> 3, newByteSize);
+            m_buffer = (ulong*)Memory.Realloc((IntPtr)m_buffer, oldByteSize, newByteSize);
+            Memory.ZeroMem((byte*)m_buffer + oldByteSize, newByteSize - oldByteSize);
+
             m_fullBitLength = m_bitWriteLength = newByteSize * 8;
 
             return true;

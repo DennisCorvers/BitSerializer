@@ -540,6 +540,11 @@ namespace BitSerializer.Bitstream
             // Confirm offset has increased.
             Assert.AreEqual(12, bs.ByteOffset);
 
+            bs.ResetRead();
+
+            Assert.AreEqual(123, bs.ReadULong());
+            Assert.AreEqual(321, bs.ReadInt32());
+
             Assert.IsTrue(bs.IsValid);
         }
     }
