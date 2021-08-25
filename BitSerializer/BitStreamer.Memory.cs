@@ -82,7 +82,7 @@ namespace BitSerializer
                 throw new ArgumentNullException(nameof(ptr));
 
             // Make sure there is enough space for the entire memory read operation.
-            if (EnsureReadSize(byteSize))
+            if (EnsureReadSize(byteSize * 8))
                 ReadMemoryUnchecked(ptr, byteSize);
         }
 
@@ -106,7 +106,7 @@ namespace BitSerializer
                 WriteUShort((ushort)count);
 
             // Make sure there is enough space for the entire memory write operation.
-            if (EnsureWriteSize(count))
+            if (EnsureWriteSize(count * 8))
             {
                 fixed (byte* ptr = &bytes[offset])
                 {
@@ -137,7 +137,7 @@ namespace BitSerializer
             if (count < 0)
                 throw new ArgumentOutOfRangeException(nameof(count));
 
-            if (!EnsureReadSize(count))
+            if (!EnsureReadSize(count * 8))
                 return Array.Empty<byte>();
 
             byte[] val = new byte[count];
